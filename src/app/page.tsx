@@ -1,6 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import Image from 'next/image';
 import Navbar from '@/components/Navbar';
 
 const services = [
@@ -59,6 +60,21 @@ export default function Home() {
           transition={{ duration: 0.5 }}
           className="text-center max-w-4xl mx-auto"
         >
+          <motion.div
+            initial={{ scale: 0.5, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 0.5 }}
+            className="flex justify-center mb-8"
+          >
+            <Image
+              src="/DevLogo.png"
+              alt="DevFlow Logo"
+              width={120}
+              height={120}
+              className="w-auto h-24 animate-float"
+              priority
+            />
+          </motion.div>
           <h1 className="text-4xl md:text-6xl font-bold mb-6">
             Transform Your Ideas Into
             <span className="gradient-text"> Digital Reality</span>

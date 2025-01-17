@@ -7,6 +7,10 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "DevFlow - Custom Software Development Solutions",
   description: "Expert software development services including web development, mobile apps, API integration, and enterprise solutions.",
+  icons: {
+    icon: '/DevLogo.png',
+    apple: '/DevLogo.png',
+  },
 };
 
 export default function RootLayout({
