@@ -13,20 +13,20 @@ const Navbar = () => {
       className="fixed top-0 left-0 right-0 z-50 flex justify-center pt-4"
     >
       <nav className="w-full max-w-[720px] mx-4">
-        <div className="bg-black rounded-full shadow-lg backdrop-blur-sm">
-          <div className="flex items-center justify-between px-6 py-2">
-            <Link href="/" className="flex items-center -ml-1">
+        <div className="bg-black rounded-full shadow-lg backdrop-blur-sm h-16">
+          <div className="flex items-center justify-between h-full px-4">
+            <div className="flex-shrink-0 relative pt-4">
               <Image
                 src="/DevLogo.png"
                 alt="DevFlow Logo"
-                width={64}
-                height={64}
-                className="w-16 h-16"
+                width={104}
+                height={104}
+                className="w-28 h-28 transform -translate-y-0.3"
                 priority
               />
-            </Link>
+            </div>
 
-            <div className="hidden md:flex items-center space-x-10">
+            <div className="hidden md:flex items-center space-x-8 ml-auto">
               <Link href="/services" className="text-white hover:text-blue-400 transition-colors">
                 Services
               </Link>
