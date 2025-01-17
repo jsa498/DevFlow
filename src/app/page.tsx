@@ -42,25 +42,25 @@ const works = [
 
 export default function Home() {
   return (
-    <main className="min-h-screen">
+    <main className="min-h-screen w-full overflow-x-hidden">
       <Navbar />
       
       {/* Hero Section */}
-      <section className="relative min-h-screen flex items-center justify-center px-4 py-12 md:py-0">
+      <section className="relative min-h-[100dvh] w-full flex items-center justify-center px-4 py-12 md:py-0">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="text-center max-w-4xl mx-auto pt-16 md:pt-20"
+          className="text-center w-full max-w-4xl mx-auto pt-16 md:pt-20"
         >
-          <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold mb-4 md:mb-6 tracking-tight px-4 sm:px-0">
+          <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold mb-4 md:mb-6 tracking-tight px-4 sm:px-0 break-words">
             Transform Your Ideas Into
             <div className="gradient-text">Digital Reality</div>
           </h1>
           <p className="text-lg sm:text-xl text-gray-600 mb-8 md:mb-12 max-w-2xl mx-auto px-4 sm:px-6">
             We craft innovative software solutions that drive business growth and enhance user experience
           </p>
-          <div className="flex flex-col sm:flex-row justify-center gap-4 sm:gap-6 px-4">
+          <div className="flex flex-col sm:flex-row justify-center gap-4 sm:gap-6 px-4 w-full max-w-lg mx-auto">
             <Link 
               href="/contact" 
               className="bg-blue-600 text-white px-8 py-3 sm:py-4 rounded-full text-lg font-medium hover:bg-blue-700 transition-colors w-full sm:w-auto text-center"
