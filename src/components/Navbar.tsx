@@ -28,7 +28,7 @@ const Navbar = () => {
               href="/contact" 
               className="btn-primary"
             >
-              Let's Connect
+              Let&apos;s Connect
             </Link>
           </div>
 

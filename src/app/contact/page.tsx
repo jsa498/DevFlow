@@ -26,7 +26,7 @@ export default function Contact() {
           className="max-w-3xl mx-auto"
         >
           <h1 className="text-4xl md:text-5xl font-bold text-center mb-8">
-            Let's Connect
+            Let&apos;s Connect
           </h1>
 
           <div className="bg-white rounded-xl shadow-lg p-6 md:p-10">
