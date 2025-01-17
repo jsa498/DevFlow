@@ -10,23 +10,23 @@ const Navbar = () => {
       initial={{ y: -100, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.5 }}
-      className="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-full max-w-[720px]"
+      className="fixed top-0 left-0 right-0 z-50 flex justify-center pt-4"
     >
-      <nav className="mx-4">
-        <div className="bg-black rounded-full shadow-lg backdrop-blur-sm px-4 py-3">
-          <div className="flex items-center justify-between">
-            <Link href="/" className="flex items-center space-x-2">
+      <nav className="w-full max-w-[720px] mx-4">
+        <div className="bg-black rounded-full shadow-lg backdrop-blur-sm">
+          <div className="flex items-center justify-between px-6 py-2">
+            <Link href="/" className="flex items-center -ml-1">
               <Image
                 src="/DevLogo.png"
                 alt="DevFlow Logo"
-                width={32}
-                height={32}
-                className="w-8 h-8"
+                width={64}
+                height={64}
+                className="w-16 h-16"
                 priority
               />
             </Link>
 
-            <div className="flex items-center space-x-8">
+            <div className="hidden md:flex items-center space-x-10">
               <Link href="/services" className="text-white hover:text-blue-400 transition-colors">
                 Services
               </Link>
@@ -38,7 +38,7 @@ const Navbar = () => {
               </Link>
               <Link 
                 href="/contact" 
-                className="text-white bg-gradient-to-r from-blue-500 to-blue-600 px-4 py-2 rounded-full hover:from-blue-600 hover:to-blue-700 transition-all"
+                className="text-white bg-blue-600 px-6 py-2 rounded-full hover:bg-blue-700 transition-all"
               >
                 Let&apos;s Connect
               </Link>
