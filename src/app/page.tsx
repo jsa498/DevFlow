@@ -46,30 +46,30 @@ export default function Home() {
       <Navbar />
       
       {/* Hero Section */}
-      <section className="relative min-h-screen flex items-center justify-center px-4">
+      <section className="relative min-h-screen flex items-center justify-center px-4 py-12 md:py-0">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="text-center max-w-4xl mx-auto pt-20"
+          className="text-center max-w-4xl mx-auto pt-16 md:pt-20"
         >
-          <h1 className="text-5xl md:text-7xl font-bold mb-6 tracking-tight">
+          <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold mb-4 md:mb-6 tracking-tight px-4 sm:px-0">
             Transform Your Ideas Into
             <div className="gradient-text">Digital Reality</div>
           </h1>
-          <p className="text-xl text-gray-600 mb-12 max-w-2xl mx-auto">
+          <p className="text-lg sm:text-xl text-gray-600 mb-8 md:mb-12 max-w-2xl mx-auto px-4 sm:px-6">
             We craft innovative software solutions that drive business growth and enhance user experience
           </p>
-          <div className="flex justify-center gap-6">
+          <div className="flex flex-col sm:flex-row justify-center gap-4 sm:gap-6 px-4">
             <Link 
               href="/contact" 
-              className="bg-blue-600 text-white px-8 py-4 rounded-full text-lg font-medium hover:bg-blue-700 transition-colors"
+              className="bg-blue-600 text-white px-8 py-3 sm:py-4 rounded-full text-lg font-medium hover:bg-blue-700 transition-colors w-full sm:w-auto text-center"
             >
               Start Your Project
             </Link>
             <Link 
               href="/services" 
-              className="border-2 border-gray-200 text-gray-800 px-8 py-4 rounded-full text-lg font-medium hover:border-blue-600 hover:text-blue-600 transition-colors"
+              className="border-2 border-gray-200 text-gray-800 px-8 py-3 sm:py-4 rounded-full text-lg font-medium hover:border-blue-600 hover:text-blue-600 transition-colors w-full sm:w-auto text-center"
             >
               Explore Services
             </Link>
@@ -77,26 +77,26 @@ export default function Home() {
         </motion.div>
 
         {/* Animated Background Element */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-full blur-3xl -z-10 animate-float" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[200%] sm:w-[800px] h-[800px] bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-full blur-3xl -z-10 animate-float" />
       </section>
 
       {/* Services Preview Section */}
-      <section className="py-20 px-4">
+      <section className="py-16 md:py-20 px-4">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
+          <div className="text-center mb-12 md:mb-16">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
             >
-              <h2 className="text-4xl md:text-5xl font-bold mb-4">Our Services</h2>
-              <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4">Our Services</h2>
+              <p className="text-lg sm:text-xl text-gray-600 max-w-2xl mx-auto px-4 sm:px-0">
                 Comprehensive software development solutions tailored to your needs
               </p>
             </motion.div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
             {services.map((service, index) => (
               <motion.div
                 key={service.title}
