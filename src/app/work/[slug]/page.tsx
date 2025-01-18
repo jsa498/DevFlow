@@ -1,5 +1,7 @@
-import { Metadata } from 'next';
+'use client';
+
 import { motion } from 'framer-motion';
+import Image from 'next/image';
 import Navbar from '@/components/Navbar';
 
 // This would typically come from a CMS or database
@@ -27,22 +29,7 @@ const projectData = {
   // Add other projects here
 };
 
-type PageProps = {
-  params: { slug: string }
-}
-
-async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const project = projectData[params.slug as keyof typeof projectData];
-  
-  return {
-    title: project?.title || 'Project Not Found',
-    description: project?.clientNeeds || 'Project details',
-  };
-}
-
-export { generateMetadata };
-
-export default async function ProjectPage({ params }: PageProps) {
+export default function ProjectPage({ params }: { params: { slug: string } }) {
   const project = projectData[params.slug as keyof typeof projectData];
   
   if (!project) return <div>Project not found</div>;
@@ -54,8 +41,10 @@ export default async function ProjectPage({ params }: PageProps) {
       {/* Project Header */}
       <section className="pt-32 pb-20 px-4">
         <div className="max-w-7xl mx-auto">
-          <div
-            className="opacity-0 translate-y-5 animate-[fadeIn_0.5s_ease-out_forwards]"
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
           >
             <div className="flex flex-wrap gap-2 mb-6">
               {project.tags.map(tag => (
@@ -68,21 +57,23 @@ export default async function ProjectPage({ params }: PageProps) {
               ))}
             </div>
             <h1 className="text-4xl md:text-6xl font-bold mb-6">{project.title}</h1>
-          </div>
+          </motion.div>
         </div>
       </section>
 
       {/* Client Needs */}
       <section className="py-20 px-4">
         <div className="max-w-7xl mx-auto">
-          <div
-            className="opacity-0 translate-y-5 animate-[fadeIn_0.5s_ease-out_forwards]"
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
           >
             <h2 className="text-3xl font-bold mb-8">What client was looking for</h2>
             <p className="text-gray-400 text-lg max-w-3xl">
               {project.clientNeeds}
             </p>
-          </div>
+          </motion.div>
         </div>
       </section>
 
