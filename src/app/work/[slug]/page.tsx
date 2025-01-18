@@ -26,13 +26,6 @@ const projectData = {
   // Add other projects here
 };
 
-type Props = {
-  params: {
-    slug: string;
-  };
-  searchParams: { [key: string]: string | string[] | undefined };
-};
-
 export default function ProjectPage({
   params,
 }: {
