@@ -28,10 +28,9 @@ const projectData = {
 
 type Props = {
   params: { slug: string }
-  searchParams: { [key: string]: string | string[] | undefined }
 }
 
-export default function ProjectPage({ params, searchParams }: Props) {
+export default function ProjectPage({ params }: Props) {
   const project = projectData[params.slug as keyof typeof projectData];
   
   if (!project) return <div>Project not found</div>;
