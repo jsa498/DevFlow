@@ -1,13 +1,5 @@
-'use client';
-
 import { motion } from 'framer-motion';
 import Navbar from '@/components/Navbar';
-
-interface PageProps {
-  params: {
-    slug: string;
-  }
-}
 
 // This would typically come from a CMS or database
 const projectData = {
@@ -34,7 +26,12 @@ const projectData = {
   // Add other projects here
 };
 
-export default function ProjectPage({ params }: PageProps) {
+type Props = {
+  params: { slug: string }
+  searchParams: { [key: string]: string | string[] | undefined }
+}
+
+export default function ProjectPage({ params, searchParams }: Props) {
   const project = projectData[params.slug as keyof typeof projectData];
   
   if (!project) return <div>Project not found</div>;
@@ -46,10 +43,8 @@ export default function ProjectPage({ params }: PageProps) {
       {/* Project Header */}
       <section className="pt-32 pb-20 px-4">
         <div className="max-w-7xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
+          <div
+            className="opacity-0 translate-y-5 animate-[fadeIn_0.5s_ease-out_forwards]"
           >
             <div className="flex flex-wrap gap-2 mb-6">
               {project.tags.map(tag => (
@@ -62,23 +57,21 @@ export default function ProjectPage({ params }: PageProps) {
               ))}
             </div>
             <h1 className="text-4xl md:text-6xl font-bold mb-6">{project.title}</h1>
-          </motion.div>
+          </div>
         </div>
       </section>
 
       {/* Client Needs */}
       <section className="py-20 px-4">
         <div className="max-w-7xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
+          <div
+            className="opacity-0 translate-y-5 animate-[fadeIn_0.5s_ease-out_forwards]"
           >
             <h2 className="text-3xl font-bold mb-8">What client was looking for</h2>
             <p className="text-gray-400 text-lg max-w-3xl">
               {project.clientNeeds}
             </p>
-          </motion.div>
+          </div>
         </div>
       </section>
 
