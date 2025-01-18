@@ -27,20 +27,29 @@ const services = [
 
 const works = [
   {
-    title: "Project 1",
-    description: "Coming Soon",
+    title: "ERP for Wood Shop",
+    description: "Custom ERP solution for manufacturing with inventory tracking",
     image: "/placeholder-project.jpg",
+    link: "/work/erp-manufacturing"
   },
   {
-    title: "Project 2",
-    description: "Coming Soon",
+    title: "Complex eCommerce Store",
+    description: "Full-featured e-commerce platform with inventory management",
     image: "/placeholder-project.jpg",
+    link: "/work/ecommerce"
   },
   {
-    title: "Project 3",
-    description: "Coming Soon",
+    title: "Shopify Storefront Builder",
+    description: "Custom Shopify storefront with advanced features",
     image: "/placeholder-project.jpg",
+    link: "/work/shopify-builder"
   },
+  {
+    title: "AI Powered Documents",
+    description: "Smart document processing with AI integration",
+    image: "/placeholder-project.jpg",
+    link: "/work/ai-documents"
+  }
 ];
 
 export default function Home() {
@@ -50,7 +59,6 @@ export default function Home() {
     offset: ["start end", "end start"]
   });
 
-  // Smoother, continuous animations
   const translateX1 = useTransform(scrollYProgress,
     [0, 1],
     ['-200%', '200%']
@@ -68,7 +76,7 @@ export default function Home() {
     <main className="min-h-screen w-full overflow-x-hidden bg-black text-white">
       <Navbar />
       
-      {/* Hero Video Section - Adjusted mobile spacing */}
+      {/* Hero Video Section */}
       <section className="relative h-[85vh] sm:h-screen w-full flex flex-col justify-end pb-8 sm:pb-16">
         <div className="absolute inset-0 w-full h-full overflow-hidden">
           <video
@@ -84,7 +92,6 @@ export default function Home() {
           <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-transparent to-black/90" />
         </div>
 
-        {/* Call to Action Buttons - Reduced bottom margin on mobile */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -106,13 +113,12 @@ export default function Home() {
         </motion.div>
       </section>
 
-      {/* Animated Text Section - Adjusted height and spacing */}
+      {/* Animated Text Section */}
       <section 
         ref={sectionRef}
         className="relative bg-black min-h-[60vh] sm:min-h-[80vh] flex flex-col items-center justify-center overflow-hidden py-6 sm:py-20"
       >
         <div className="w-full max-w-[1400px] mx-auto px-4">
-          {/* First Line */}
           <motion.div
             className="relative flex items-start mb-2 sm:mb-8"
             style={{ 
@@ -129,7 +135,6 @@ export default function Home() {
             </span>
           </motion.div>
 
-          {/* Second Line */}
           <motion.div
             className="relative flex items-end justify-end"
             style={{ 
@@ -148,10 +153,10 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Work Section - Thind.dev Style */}
+      {/* Work Section */}
       <section className="min-h-screen w-full bg-black pt-32 pb-20">
-        <div className="max-w-[1400px] mx-auto px-6 md:px-8">
-          <div className="flex flex-col lg:flex-row justify-between items-start mb-32">
+        <div className="max-w-[1200px] mx-auto px-6 md:px-8">
+          <div className="flex flex-col lg:flex-row justify-between items-start mb-24">
             <h2 className="text-6xl md:text-7xl lg:text-8xl font-bold text-white mb-8 lg:mb-0" style={{ fontFamily: "'Clash Display', sans-serif" }}>
               Our Work
             </h2>
@@ -161,18 +166,18 @@ export default function Home() {
           </div>
 
           {/* Project Grid - Staggered Layout */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-20 gap-y-32">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-16 gap-y-24">
             {/* ERP Project */}
             <div className="group cursor-pointer md:mt-0">
-              <div className="relative w-full aspect-[4/3] bg-zinc-900 rounded-2xl overflow-hidden mb-6">
+              <div className="relative w-full aspect-[16/10] bg-zinc-900 rounded-xl overflow-hidden mb-5">
                 <div className="absolute inset-0 bg-[#111111]"></div>
               </div>
               <div className="flex items-center justify-between">
-                <h3 className="text-2xl md:text-3xl text-white font-medium" style={{ fontFamily: "'Clash Display', sans-serif" }}>
+                <h3 className="text-xl md:text-2xl text-white font-medium" style={{ fontFamily: "'Clash Display', sans-serif" }}>
                   ERP for Wood Shop
                 </h3>
-                <div className="bg-zinc-900/50 rounded-full p-3 group-hover:translate-x-2 transition-transform">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <div className="bg-zinc-900/50 rounded-full p-2.5 group-hover:translate-x-2 transition-transform">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-blue-400"/>
                   </svg>
                 </div>
@@ -180,16 +185,16 @@ export default function Home() {
             </div>
 
             {/* Complex eCommerce Store */}
-            <div className="group cursor-pointer md:mt-32">
-              <div className="relative w-full aspect-[4/3] bg-zinc-900 rounded-2xl overflow-hidden mb-6">
+            <div className="group cursor-pointer md:mt-24">
+              <div className="relative w-full aspect-[16/10] bg-zinc-900 rounded-xl overflow-hidden mb-5">
                 <div className="absolute inset-0 bg-[#111111]"></div>
               </div>
               <div className="flex items-center justify-between">
-                <h3 className="text-2xl md:text-3xl text-white font-medium" style={{ fontFamily: "'Clash Display', sans-serif" }}>
+                <h3 className="text-xl md:text-2xl text-white font-medium" style={{ fontFamily: "'Clash Display', sans-serif" }}>
                   Complex eCommerce Store
                 </h3>
-                <div className="bg-zinc-900/50 rounded-full p-3 group-hover:translate-x-2 transition-transform">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <div className="bg-zinc-900/50 rounded-full p-2.5 group-hover:translate-x-2 transition-transform">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-blue-400"/>
                   </svg>
                 </div>
@@ -198,15 +203,15 @@ export default function Home() {
 
             {/* Shopify Storefront Builder */}
             <div className="group cursor-pointer md:mt-0">
-              <div className="relative w-full aspect-[4/3] bg-zinc-900 rounded-2xl overflow-hidden mb-6">
+              <div className="relative w-full aspect-[16/10] bg-zinc-900 rounded-xl overflow-hidden mb-5">
                 <div className="absolute inset-0 bg-[#111111]"></div>
               </div>
               <div className="flex items-center justify-between">
-                <h3 className="text-2xl md:text-3xl text-white font-medium" style={{ fontFamily: "'Clash Display', sans-serif" }}>
+                <h3 className="text-xl md:text-2xl text-white font-medium" style={{ fontFamily: "'Clash Display', sans-serif" }}>
                   Shopify Storefront Builder
                 </h3>
-                <div className="bg-zinc-900/50 rounded-full p-3 group-hover:translate-x-2 transition-transform">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <div className="bg-zinc-900/50 rounded-full p-2.5 group-hover:translate-x-2 transition-transform">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-blue-400"/>
                   </svg>
                 </div>
@@ -214,16 +219,16 @@ export default function Home() {
             </div>
 
             {/* AI Powered Documents */}
-            <div className="group cursor-pointer md:mt-32">
-              <div className="relative w-full aspect-[4/3] bg-zinc-900 rounded-2xl overflow-hidden mb-6">
+            <div className="group cursor-pointer md:mt-24">
+              <div className="relative w-full aspect-[16/10] bg-zinc-900 rounded-xl overflow-hidden mb-5">
                 <div className="absolute inset-0 bg-[#111111]"></div>
               </div>
               <div className="flex items-center justify-between">
-                <h3 className="text-2xl md:text-3xl text-white font-medium" style={{ fontFamily: "'Clash Display', sans-serif" }}>
+                <h3 className="text-xl md:text-2xl text-white font-medium" style={{ fontFamily: "'Clash Display', sans-serif" }}>
                   AI Powered Documents
                 </h3>
-                <div className="bg-zinc-900/50 rounded-full p-3 group-hover:translate-x-2 transition-transform">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <div className="bg-zinc-900/50 rounded-full p-2.5 group-hover:translate-x-2 transition-transform">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-blue-400"/>
                   </svg>
                 </div>
@@ -251,10 +256,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Consultation CTA */}
       <ConsultationCTA />
-
-      {/* Footer */}
       <Footer />
     </main>
   );
