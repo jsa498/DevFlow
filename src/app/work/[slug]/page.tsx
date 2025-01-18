@@ -3,6 +3,12 @@
 import { motion } from 'framer-motion';
 import Navbar from '@/components/Navbar';
 
+interface PageProps {
+  params: {
+    slug: string;
+  }
+}
+
 // This would typically come from a CMS or database
 const projectData = {
   'erp-manufacturing': {
@@ -28,7 +34,7 @@ const projectData = {
   // Add other projects here
 };
 
-export default function ProjectPage({ params }: { params: { slug: string } }) {
+export default function ProjectPage({ params }: PageProps) {
   const project = projectData[params.slug as keyof typeof projectData];
   
   if (!project) return <div>Project not found</div>;
