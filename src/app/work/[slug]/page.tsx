@@ -1,6 +1,5 @@
 'use client';
 
-import { use } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import Navbar from '@/components/Navbar';
@@ -65,8 +64,12 @@ const projects = {
   }
 };
 
-export default function ProjectPage({ params }: { params: { slug: string } }) {
-  const slug = use(Promise.resolve(params.slug));
+interface PageProps {
+  params: Promise<{ slug: string }>;
+}
+
+export default async function ProjectPage({ params }: PageProps) {
+  const { slug } = await params;
   const project = projects[slug as keyof typeof projects];
 
   if (!project) {
