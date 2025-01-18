@@ -1,3 +1,4 @@
+import { Metadata } from 'next';
 import { motion } from 'framer-motion';
 import Navbar from '@/components/Navbar';
 
@@ -26,11 +27,22 @@ const projectData = {
   // Add other projects here
 };
 
-export default function ProjectPage({
-  params,
-}: {
-  params: { slug: string };
-}) {
+type PageProps = {
+  params: { slug: string }
+}
+
+async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const project = projectData[params.slug as keyof typeof projectData];
+  
+  return {
+    title: project?.title || 'Project Not Found',
+    description: project?.clientNeeds || 'Project details',
+  };
+}
+
+export { generateMetadata };
+
+export default async function ProjectPage({ params }: PageProps) {
   const project = projectData[params.slug as keyof typeof projectData];
   
   if (!project) return <div>Project not found</div>;
