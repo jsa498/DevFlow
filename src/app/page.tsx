@@ -48,9 +48,19 @@ export default function Home() {
     offset: ["start end", "end start"]
   });
 
-  const x1 = useTransform(scrollYProgress, [0, 0.5], ['-100%', '0%']);
-  const x2 = useTransform(scrollYProgress, [0, 0.5], ['100%', '0%']);
-  const opacity = useTransform(scrollYProgress, [0, 0.2, 0.8, 1], [0, 1, 1, 0]);
+  // Smoother, continuous animations
+  const translateX1 = useTransform(scrollYProgress,
+    [0, 1],
+    ['-200%', '200%']
+  );
+  const translateX2 = useTransform(scrollYProgress,
+    [0, 1],
+    ['200%', '-200%']
+  );
+  const opacity = useTransform(scrollYProgress, 
+    [0.1, 0.2, 0.8, 0.9], 
+    [0, 1, 1, 0]
+  );
 
   return (
     <main className="min-h-screen w-full overflow-x-hidden">
@@ -103,17 +113,23 @@ export default function Home() {
           {/* First Line */}
           <motion.div
             className="relative flex items-start mb-4 sm:mb-8"
-            style={{ x: x1, opacity }}
+            style={{ 
+              translateX: translateX1,
+              opacity 
+            }}
           >
             <span className="text-7xl sm:text-8xl md:text-9xl lg:text-[12rem] font-bold text-white leading-none whitespace-nowrap">
-              Your Dream
+              You Dream
             </span>
           </motion.div>
 
           {/* Second Line */}
           <motion.div
             className="relative flex items-end justify-end"
-            style={{ x: x2, opacity }}
+            style={{ 
+              translateX: translateX2,
+              opacity 
+            }}
           >
             <span className="text-7xl sm:text-8xl md:text-9xl lg:text-[12rem] font-bold text-white leading-none whitespace-nowrap">
               We Build
