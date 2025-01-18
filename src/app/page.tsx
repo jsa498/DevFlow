@@ -7,42 +7,6 @@ import { useRef } from 'react';
 import ConsultationCTA from '@/components/ConsultationCTA';
 import Footer from '@/components/Footer';
 
-const services = [
-  {
-    title: "Custom Website Development",
-    description: "Modern, responsive websites built with cutting-edge technologies",
-    icon: "🌐",
-  },
-  {
-    title: "Mobile App Development",
-    description: "Native and cross-platform mobile applications",
-    icon: "📱",
-  },
-  {
-    title: "Cloud Solutions",
-    description: "Scalable cloud infrastructure and solutions",
-    icon: "☁️",
-  },
-];
-
-const works = [
-  {
-    title: "Project 1",
-    description: "Coming Soon",
-    image: "/placeholder-project.jpg",
-  },
-  {
-    title: "Project 2",
-    description: "Coming Soon",
-    image: "/placeholder-project.jpg",
-  },
-  {
-    title: "Project 3",
-    description: "Coming Soon",
-    image: "/placeholder-project.jpg",
-  },
-];
-
 export default function Home() {
   const sectionRef = useRef(null);
   const { scrollYProgress } = useScroll({

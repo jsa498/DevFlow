@@ -1,8 +1,10 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import Image from 'next/image';
+import Link from 'next/link';
 import Navbar from '@/components/Navbar';
+import ConsultationCTA from '@/components/ConsultationCTA';
+import Footer from '@/components/Footer';
 
 // This would typically come from a CMS or database
 const projectData = {
