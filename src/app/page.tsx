@@ -66,8 +66,8 @@ export default function Home() {
     <main className="min-h-screen w-full overflow-x-hidden bg-black text-white">
       <Navbar />
       
-      {/* Hero Video Section */}
-      <section className="relative h-screen w-full flex flex-col justify-end pb-16">
+      {/* Hero Video Section - Adjusted mobile spacing */}
+      <section className="relative h-[85vh] sm:h-screen w-full flex flex-col justify-end pb-8 sm:pb-16">
         <div className="absolute inset-0 w-full h-full overflow-hidden">
           <video
             autoPlay
@@ -82,12 +82,12 @@ export default function Home() {
           <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-transparent to-black/90" />
         </div>
 
-        {/* Call to Action Buttons */}
+        {/* Call to Action Buttons - Reduced bottom margin on mobile */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.5 }}
-          className="relative z-10 flex flex-col sm:flex-row justify-center gap-4 sm:gap-6 px-6 sm:px-4 w-full sm:w-auto max-w-[300px] sm:max-w-none mx-auto"
+          className="relative z-10 flex flex-col sm:flex-row justify-center gap-3 sm:gap-6 px-4 sm:px-6 w-full sm:w-auto max-w-[300px] sm:max-w-none mx-auto mb-4 sm:mb-0"
         >
           <Link 
             href="/contact" 
@@ -104,10 +104,10 @@ export default function Home() {
         </motion.div>
       </section>
 
-      {/* Animated Text Section */}
+      {/* Animated Text Section - Adjusted height and spacing */}
       <section 
         ref={sectionRef}
-        className="relative bg-black min-h-[80vh] md:min-h-screen flex flex-col items-center justify-center overflow-hidden py-10 md:py-20"
+        className="relative bg-black min-h-[60vh] sm:min-h-[80vh] flex flex-col items-center justify-center overflow-hidden py-6 sm:py-20"
       >
         <div className="w-full max-w-[1400px] mx-auto px-4">
           {/* First Line */}
@@ -146,8 +146,8 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Services Preview Section */}
-      <section className="py-16 md:py-20 px-4 bg-black">
+      {/* Services Preview Section - Adjusted padding */}
+      <section className="py-10 sm:py-16 md:py-20 px-4 bg-black">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12 md:mb-16">
             <motion.div

@@ -22,18 +22,18 @@ const Navbar = () => {
       initial={{ y: -100, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.5 }}
-      className="fixed top-0 left-0 right-0 z-50 flex justify-center pt-2 sm:pt-4 w-full"
+      className="fixed top-0 left-0 right-0 z-50 flex justify-center pt-1 sm:pt-4 w-full"
     >
       <nav className="w-full max-w-[720px] mx-2 sm:mx-4 px-1">
-        <div className="bg-black rounded-full shadow-lg backdrop-blur-sm h-14 sm:h-16 w-full">
+        <div className="bg-black rounded-full shadow-lg backdrop-blur-sm h-12 sm:h-16 w-full">
           <div className="flex items-center justify-between h-full px-3 sm:px-4 relative">
-            <Link href="/" className="flex-shrink-0 relative pt-4 -ml-1 sm:ml-0">
+            <Link href="/" className="flex-shrink-0 relative pt-3 sm:pt-4 -ml-1 sm:ml-0">
               <Image
                 src="/DevLogo.png"
                 alt="DevFlow Logo"
                 width={96}
                 height={96}
-                className="w-24 sm:w-28 h-24 sm:h-28 transform -translate-y-0.5"
+                className="w-20 sm:w-28 h-20 sm:h-28 transform -translate-y-0.5"
                 priority
               />
             </Link>
