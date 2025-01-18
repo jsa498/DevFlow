@@ -1,8 +1,9 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { motion, useScroll, useTransform } from 'framer-motion';
 import Link from 'next/link';
 import Navbar from '@/components/Navbar';
+import { useRef } from 'react';
 
 const services = [
   {
@@ -41,43 +42,84 @@ const works = [
 ];
 
 export default function Home() {
+  const sectionRef = useRef(null);
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ["start end", "end start"]
+  });
+
+  const x1 = useTransform(scrollYProgress, [0, 0.5], ['-100%', '0%']);
+  const x2 = useTransform(scrollYProgress, [0, 0.5], ['100%', '0%']);
+  const opacity = useTransform(scrollYProgress, [0, 0.2, 0.8, 1], [0, 1, 1, 0]);
+
   return (
     <main className="min-h-screen w-full overflow-x-hidden">
       <Navbar />
       
-      {/* Hero Section */}
-      <section className="relative min-h-[100dvh] w-full flex items-center justify-center px-4 py-12 md:py-0">
+      {/* Hero Video Section */}
+      <section className="relative h-screen w-full flex flex-col justify-end pb-16">
+        <div className="absolute inset-0 w-full h-full overflow-hidden">
+          <video
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="w-full h-full object-cover"
+            style={{ filter: 'brightness(0.85) contrast(1.1)' }}
+          >
+            <source src="/DevFlow.mp4" type="video/mp4" />
+          </video>
+          <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-transparent to-black/90" />
+        </div>
+
+        {/* Call to Action Buttons */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="text-center w-full max-w-4xl mx-auto pt-16 md:pt-20"
+          transition={{ duration: 0.8, delay: 0.5 }}
+          className="relative z-10 flex flex-col sm:flex-row justify-center gap-6 px-4"
         >
-          <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold mb-4 md:mb-6 tracking-tight px-4 sm:px-0 break-words">
-            Transform Your Ideas Into
-            <div className="gradient-text">Digital Reality</div>
-          </h1>
-          <p className="text-lg sm:text-xl text-gray-600 mb-8 md:mb-12 max-w-2xl mx-auto px-4 sm:px-6">
-            We craft innovative software solutions that drive business growth and enhance user experience
-          </p>
-          <div className="flex flex-col sm:flex-row justify-center gap-4 sm:gap-6 px-4 w-full max-w-lg mx-auto">
-            <Link 
-              href="/contact" 
-              className="bg-blue-600 text-white px-8 py-3 sm:py-4 rounded-full text-lg font-medium hover:bg-blue-700 transition-colors w-full sm:w-auto text-center"
-            >
-              Start Your Project
-            </Link>
-            <Link 
-              href="/services" 
-              className="border-2 border-gray-200 text-gray-800 px-8 py-3 sm:py-4 rounded-full text-lg font-medium hover:border-blue-600 hover:text-blue-600 transition-colors w-full sm:w-auto text-center"
-            >
-              Explore Services
-            </Link>
-          </div>
+          <Link 
+            href="/contact" 
+            className="bg-blue-600 text-white px-8 py-4 rounded-full text-lg font-medium hover:bg-blue-500 transition-all hover:scale-105 hover:shadow-[0_0_20px_rgba(37,99,235,0.5)] transform duration-200"
+          >
+            Start Your Project
+          </Link>
+          <Link 
+            href="/services" 
+            className="border-2 border-white/80 bg-black/20 backdrop-blur-sm text-white px-8 py-4 rounded-full text-lg font-medium hover:bg-white/20 hover:border-white transition-all hover:scale-105 hover:shadow-[0_0_20px_rgba(255,255,255,0.3)] transform duration-200"
+          >
+            Explore Services
+          </Link>
         </motion.div>
+      </section>
 
-        {/* Animated Background Element */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[200%] sm:w-[800px] h-[800px] bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-full blur-3xl -z-10 animate-float" />
+      {/* Animated Text Section */}
+      <section 
+        ref={sectionRef}
+        className="relative bg-black min-h-screen flex flex-col items-center justify-center overflow-hidden py-20"
+      >
+        <div className="w-full max-w-[1400px] mx-auto px-4">
+          {/* First Line */}
+          <motion.div
+            className="relative flex items-start mb-4 sm:mb-8"
+            style={{ x: x1, opacity }}
+          >
+            <span className="text-7xl sm:text-8xl md:text-9xl lg:text-[12rem] font-bold text-white leading-none whitespace-nowrap">
+              Your Dream
+            </span>
+          </motion.div>
+
+          {/* Second Line */}
+          <motion.div
+            className="relative flex items-end justify-end"
+            style={{ x: x2, opacity }}
+          >
+            <span className="text-7xl sm:text-8xl md:text-9xl lg:text-[12rem] font-bold text-white leading-none whitespace-nowrap">
+              We Build
+            </span>
+          </motion.div>
+        </div>
       </section>
 
       {/* Services Preview Section */}
