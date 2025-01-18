@@ -26,13 +26,18 @@ const projectData = {
   // Add other projects here
 };
 
-interface Props {
+type Props = {
   params: {
     slug: string;
   };
-}
+  searchParams: { [key: string]: string | string[] | undefined };
+};
 
-export default async function ProjectPage({ params }: Props) {
+export default function ProjectPage({
+  params,
+}: {
+  params: { slug: string };
+}) {
   const project = projectData[params.slug as keyof typeof projectData];
   
   if (!project) return <div>Project not found</div>;
