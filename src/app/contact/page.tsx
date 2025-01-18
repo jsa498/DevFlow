@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion';
 import Navbar from '@/components/Navbar';
+import Footer from '@/components/Footer';
 
 const services = [
   "Custom Website Development",
@@ -121,6 +122,8 @@ export default function Contact() {
           </div>
         </motion.div>
       </section>
+
+      <Footer />
     </main>
   );
 } 

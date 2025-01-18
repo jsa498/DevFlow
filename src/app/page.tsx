@@ -4,6 +4,8 @@ import { motion, useScroll, useTransform } from 'framer-motion';
 import Link from 'next/link';
 import Navbar from '@/components/Navbar';
 import { useRef } from 'react';
+import ConsultationCTA from '@/components/ConsultationCTA';
+import Footer from '@/components/Footer';
 
 const services = [
   {
@@ -96,10 +98,10 @@ export default function Home() {
             Start Your Project
           </Link>
           <Link 
-            href="/services" 
+            href="/work" 
             className="border-2 border-white/80 bg-black/20 backdrop-blur-sm text-white px-6 sm:px-8 py-3 sm:py-4 rounded-full text-base sm:text-lg font-medium hover:bg-white/20 hover:border-white transition-all hover:scale-105 hover:shadow-[0_0_20px_rgba(255,255,255,0.3)] transform duration-200 text-center"
           >
-            Explore Services
+            Our Work
           </Link>
         </motion.div>
       </section>
@@ -146,86 +148,87 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Services Preview Section - Adjusted padding */}
-      <section className="py-10 sm:py-16 md:py-20 px-4 bg-black">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-12 md:mb-16">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-            >
-              <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 text-white">Our Services</h2>
-              <p className="text-lg sm:text-xl text-gray-400 max-w-2xl mx-auto px-4 sm:px-0">
-                Comprehensive software development solutions tailored to your needs
-              </p>
-            </motion.div>
+      {/* Work Section - Thind.dev Style */}
+      <section className="min-h-screen w-full bg-black pt-32 pb-20">
+        <div className="max-w-[1400px] mx-auto px-6 md:px-8">
+          <div className="flex flex-col lg:flex-row justify-between items-start mb-32">
+            <h2 className="text-6xl md:text-7xl lg:text-8xl font-bold text-white mb-8 lg:mb-0" style={{ fontFamily: "'Clash Display', sans-serif" }}>
+              Our Work
+            </h2>
+            <p className="text-gray-400 text-lg md:text-xl max-w-[400px] mt-4">
+              We have built scalable applications that are the backbone of businesses generating over $300 million in market value.
+            </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
-            {services.map((service, index) => (
-              <motion.div
-                key={service.title}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                className="bg-zinc-900/50 backdrop-blur-sm p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border border-white/10"
-              >
-                <div className="text-4xl mb-4">{service.icon}</div>
-                <h3 className="text-2xl font-semibold mb-4 text-white">{service.title}</h3>
-                <p className="text-gray-400 mb-6">{service.description}</p>
-                <Link 
-                  href="/services" 
-                  className="text-blue-400 font-medium hover:text-blue-300 transition-colors flex items-center gap-2 group"
-                >
-                  Learn More 
-                  <span className="transform group-hover:translate-x-1 transition-transform">→</span>
-                </Link>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Work Preview Section */}
-      <section className="py-20 px-4 bg-zinc-950">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-            >
-              <h2 className="text-4xl md:text-5xl font-bold mb-4 text-white">Featured Work</h2>
-              <p className="text-xl text-gray-400 max-w-2xl mx-auto">
-                Explore our latest projects and success stories
-              </p>
-            </motion.div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {works.map((work, index) => (
-              <motion.div
-                key={work.title}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                className="bg-zinc-900/50 backdrop-blur-sm rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border border-white/10"
-              >
-                <div className="h-48 bg-zinc-800"></div>
-                <div className="p-6">
-                  <h3 className="text-2xl font-semibold mb-2 text-white">{work.title}</h3>
-                  <p className="text-gray-400 mb-4">{work.description}</p>
-                  <Link 
-                    href="/work" 
-                    className="text-blue-400 font-medium hover:text-blue-300 transition-colors flex items-center gap-2 group"
-                  >
-                    View Details 
-                    <span className="transform group-hover:translate-x-1 transition-transform">→</span>
-                  </Link>
+          {/* Project Grid - Staggered Layout */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-20 gap-y-32">
+            {/* ERP Project */}
+            <div className="group cursor-pointer md:mt-0">
+              <div className="relative w-full aspect-[4/3] bg-zinc-900 rounded-2xl overflow-hidden mb-6">
+                <div className="absolute inset-0 bg-[#111111]"></div>
+              </div>
+              <div className="flex items-center justify-between">
+                <h3 className="text-2xl md:text-3xl text-white font-medium" style={{ fontFamily: "'Clash Display', sans-serif" }}>
+                  ERP for Wood Shop
+                </h3>
+                <div className="bg-zinc-900/50 rounded-full p-3 group-hover:translate-x-2 transition-transform">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-blue-400"/>
+                  </svg>
                 </div>
-              </motion.div>
-            ))}
+              </div>
+            </div>
+
+            {/* Complex eCommerce Store */}
+            <div className="group cursor-pointer md:mt-32">
+              <div className="relative w-full aspect-[4/3] bg-zinc-900 rounded-2xl overflow-hidden mb-6">
+                <div className="absolute inset-0 bg-[#111111]"></div>
+              </div>
+              <div className="flex items-center justify-between">
+                <h3 className="text-2xl md:text-3xl text-white font-medium" style={{ fontFamily: "'Clash Display', sans-serif" }}>
+                  Complex eCommerce Store
+                </h3>
+                <div className="bg-zinc-900/50 rounded-full p-3 group-hover:translate-x-2 transition-transform">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-blue-400"/>
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            {/* Shopify Storefront Builder */}
+            <div className="group cursor-pointer md:mt-0">
+              <div className="relative w-full aspect-[4/3] bg-zinc-900 rounded-2xl overflow-hidden mb-6">
+                <div className="absolute inset-0 bg-[#111111]"></div>
+              </div>
+              <div className="flex items-center justify-between">
+                <h3 className="text-2xl md:text-3xl text-white font-medium" style={{ fontFamily: "'Clash Display', sans-serif" }}>
+                  Shopify Storefront Builder
+                </h3>
+                <div className="bg-zinc-900/50 rounded-full p-3 group-hover:translate-x-2 transition-transform">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-blue-400"/>
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            {/* AI Powered Documents */}
+            <div className="group cursor-pointer md:mt-32">
+              <div className="relative w-full aspect-[4/3] bg-zinc-900 rounded-2xl overflow-hidden mb-6">
+                <div className="absolute inset-0 bg-[#111111]"></div>
+              </div>
+              <div className="flex items-center justify-between">
+                <h3 className="text-2xl md:text-3xl text-white font-medium" style={{ fontFamily: "'Clash Display', sans-serif" }}>
+                  AI Powered Documents
+                </h3>
+                <div className="bg-zinc-900/50 rounded-full p-3 group-hover:translate-x-2 transition-transform">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-blue-400"/>
+                  </svg>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -247,6 +250,12 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* Consultation CTA */}
+      <ConsultationCTA />
+
+      {/* Footer */}
+      <Footer />
     </main>
   );
 }
