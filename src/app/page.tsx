@@ -63,7 +63,7 @@ export default function Home() {
   );
 
   return (
-    <main className="min-h-screen w-full overflow-x-hidden">
+    <main className="min-h-screen w-full overflow-x-hidden bg-black text-white">
       <Navbar />
       
       {/* Hero Video Section */}
@@ -74,8 +74,8 @@ export default function Home() {
             loop
             muted
             playsInline
-            className="w-full h-full object-cover"
-            style={{ filter: 'brightness(0.85) contrast(1.1)' }}
+            className="w-full h-full object-contain md:object-cover"
+            style={{ filter: 'brightness(0.85) contrast(1.1)', backgroundColor: 'black' }}
           >
             <source src="/DevFlow.mp4" type="video/mp4" />
           </video>
@@ -87,17 +87,17 @@ export default function Home() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.5 }}
-          className="relative z-10 flex flex-col sm:flex-row justify-center gap-6 px-4"
+          className="relative z-10 flex flex-col sm:flex-row justify-center gap-4 sm:gap-6 px-6 sm:px-4 w-full sm:w-auto max-w-[300px] sm:max-w-none mx-auto"
         >
           <Link 
             href="/contact" 
-            className="bg-blue-600 text-white px-8 py-4 rounded-full text-lg font-medium hover:bg-blue-500 transition-all hover:scale-105 hover:shadow-[0_0_20px_rgba(37,99,235,0.5)] transform duration-200"
+            className="bg-blue-600 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-full text-base sm:text-lg font-medium hover:bg-blue-500 transition-all hover:scale-105 hover:shadow-[0_0_20px_rgba(37,99,235,0.5)] transform duration-200 text-center"
           >
             Start Your Project
           </Link>
           <Link 
             href="/services" 
-            className="border-2 border-white/80 bg-black/20 backdrop-blur-sm text-white px-8 py-4 rounded-full text-lg font-medium hover:bg-white/20 hover:border-white transition-all hover:scale-105 hover:shadow-[0_0_20px_rgba(255,255,255,0.3)] transform duration-200"
+            className="border-2 border-white/80 bg-black/20 backdrop-blur-sm text-white px-6 sm:px-8 py-3 sm:py-4 rounded-full text-base sm:text-lg font-medium hover:bg-white/20 hover:border-white transition-all hover:scale-105 hover:shadow-[0_0_20px_rgba(255,255,255,0.3)] transform duration-200 text-center"
           >
             Explore Services
           </Link>
@@ -107,18 +107,22 @@ export default function Home() {
       {/* Animated Text Section */}
       <section 
         ref={sectionRef}
-        className="relative bg-black min-h-screen flex flex-col items-center justify-center overflow-hidden py-20"
+        className="relative bg-black min-h-[80vh] md:min-h-screen flex flex-col items-center justify-center overflow-hidden py-10 md:py-20"
       >
         <div className="w-full max-w-[1400px] mx-auto px-4">
           {/* First Line */}
           <motion.div
-            className="relative flex items-start mb-4 sm:mb-8"
+            className="relative flex items-start mb-2 sm:mb-8"
             style={{ 
               translateX: translateX1,
               opacity 
             }}
           >
-            <span className="text-7xl sm:text-8xl md:text-9xl lg:text-[12rem] font-bold text-white leading-none whitespace-nowrap">
+            <span className="text-6xl sm:text-8xl md:text-9xl lg:text-[12rem] font-black text-transparent bg-clip-text bg-gradient-to-r from-white via-white/90 to-white/80 leading-none whitespace-nowrap tracking-tight"
+                  style={{ 
+                    textShadow: '0 0 40px rgba(255,255,255,0.2)',
+                    fontFamily: "'Clash Display', sans-serif"
+                  }}>
               You Dream
             </span>
           </motion.div>
@@ -131,7 +135,11 @@ export default function Home() {
               opacity 
             }}
           >
-            <span className="text-7xl sm:text-8xl md:text-9xl lg:text-[12rem] font-bold text-white leading-none whitespace-nowrap">
+            <span className="text-6xl sm:text-8xl md:text-9xl lg:text-[12rem] font-black text-transparent bg-clip-text bg-gradient-to-r from-white/80 via-white/90 to-white leading-none whitespace-nowrap tracking-tight"
+                  style={{ 
+                    textShadow: '0 0 40px rgba(255,255,255,0.2)',
+                    fontFamily: "'Clash Display', sans-serif"
+                  }}>
               We Build
             </span>
           </motion.div>
@@ -139,7 +147,7 @@ export default function Home() {
       </section>
 
       {/* Services Preview Section */}
-      <section className="py-16 md:py-20 px-4">
+      <section className="py-16 md:py-20 px-4 bg-black">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12 md:mb-16">
             <motion.div
@@ -147,8 +155,8 @@ export default function Home() {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
             >
-              <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4">Our Services</h2>
-              <p className="text-lg sm:text-xl text-gray-600 max-w-2xl mx-auto px-4 sm:px-0">
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 text-white">Our Services</h2>
+              <p className="text-lg sm:text-xl text-gray-400 max-w-2xl mx-auto px-4 sm:px-0">
                 Comprehensive software development solutions tailored to your needs
               </p>
             </motion.div>
@@ -161,16 +169,17 @@ export default function Home() {
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
-                className="bg-white p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
+                className="bg-zinc-900/50 backdrop-blur-sm p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border border-white/10"
               >
                 <div className="text-4xl mb-4">{service.icon}</div>
-                <h3 className="text-2xl font-semibold mb-4">{service.title}</h3>
-                <p className="text-gray-600 mb-6">{service.description}</p>
+                <h3 className="text-2xl font-semibold mb-4 text-white">{service.title}</h3>
+                <p className="text-gray-400 mb-6">{service.description}</p>
                 <Link 
                   href="/services" 
-                  className="text-blue-600 font-medium hover:text-blue-700 transition-colors"
+                  className="text-blue-400 font-medium hover:text-blue-300 transition-colors flex items-center gap-2 group"
                 >
-                  Learn More →
+                  Learn More 
+                  <span className="transform group-hover:translate-x-1 transition-transform">→</span>
                 </Link>
               </motion.div>
             ))}
@@ -179,7 +188,7 @@ export default function Home() {
       </section>
 
       {/* Work Preview Section */}
-      <section className="py-20 px-4 bg-gray-50">
+      <section className="py-20 px-4 bg-zinc-950">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <motion.div
@@ -187,8 +196,8 @@ export default function Home() {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
             >
-              <h2 className="text-4xl md:text-5xl font-bold mb-4">Featured Work</h2>
-              <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+              <h2 className="text-4xl md:text-5xl font-bold mb-4 text-white">Featured Work</h2>
+              <p className="text-xl text-gray-400 max-w-2xl mx-auto">
                 Explore our latest projects and success stories
               </p>
             </motion.div>
@@ -201,17 +210,18 @@ export default function Home() {
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
-                className="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
+                className="bg-zinc-900/50 backdrop-blur-sm rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border border-white/10"
               >
-                <div className="h-48 bg-gray-200"></div>
+                <div className="h-48 bg-zinc-800"></div>
                 <div className="p-6">
-                  <h3 className="text-2xl font-semibold mb-2">{work.title}</h3>
-                  <p className="text-gray-600 mb-4">{work.description}</p>
+                  <h3 className="text-2xl font-semibold mb-2 text-white">{work.title}</h3>
+                  <p className="text-gray-400 mb-4">{work.description}</p>
                   <Link 
                     href="/work" 
-                    className="text-blue-600 font-medium hover:text-blue-700 transition-colors"
+                    className="text-blue-400 font-medium hover:text-blue-300 transition-colors flex items-center gap-2 group"
                   >
-                    View Details →
+                    View Details 
+                    <span className="transform group-hover:translate-x-1 transition-transform">→</span>
                   </Link>
                 </div>
               </motion.div>
@@ -221,7 +231,7 @@ export default function Home() {
       </section>
 
       {/* Resources Preview Section */}
-      <section className="py-20 px-4">
+      <section className="py-20 px-4 bg-black">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <motion.div
@@ -229,8 +239,8 @@ export default function Home() {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
             >
-              <h2 className="text-4xl md:text-5xl font-bold mb-4">Resources</h2>
-              <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+              <h2 className="text-4xl md:text-5xl font-bold mb-4 text-white">Resources</h2>
+              <p className="text-xl text-gray-400 max-w-2xl mx-auto">
                 Coming Soon - Stay tuned for helpful tools and resources
               </p>
             </motion.div>

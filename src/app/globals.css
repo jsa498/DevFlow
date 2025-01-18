@@ -1,3 +1,5 @@
+@import url('https://api.fontshare.com/v2/css?f[]=clash-display@700,600,500,400&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -38,4 +40,13 @@
 
 .animate-float {
   animation: float 6s ease-in-out infinite;
+}
+
+/* Text Effects */
+.text-gradient {
+  @apply bg-clip-text text-transparent bg-gradient-to-r from-white via-white/90 to-white/80;
+}
+
+.text-shadow-glow {
+  text-shadow: 0 0 40px rgba(255,255,255,0.2);
 }
