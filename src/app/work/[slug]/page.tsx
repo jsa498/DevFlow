@@ -1,5 +1,3 @@
-'use client';
-
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import Navbar from '@/components/Navbar';
@@ -65,11 +63,11 @@ const projects = {
 };
 
 interface PageProps {
-  params: Promise<{ slug: string }>;
+  params: { slug: string };
 }
 
-export default async function ProjectPage({ params }: PageProps) {
-  const { slug } = await params;
+export default function ProjectPage({ params }: PageProps) {
+  const { slug } = params;
   const project = projects[slug as keyof typeof projects];
 
   if (!project) {
