@@ -21,7 +21,7 @@ export default function HeroAnimation() {
   const currentHeadRotationRef = useRef({ x: 0, y: 0 });
   const targetHeadRotationRef = useRef({ x: 0, y: 0 });
 
-  const animationFrameRef = useRef<number>();
+  const animationFrameRef = useRef<number | null>(null);
 
   // onLoad: Called when the Spline scene is loaded.
   const onLoad = (splineApp: Application) => {
