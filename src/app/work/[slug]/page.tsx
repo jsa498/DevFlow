@@ -1,3 +1,5 @@
+'use client';
+
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import Navbar from '@/components/Navbar';
@@ -66,7 +68,7 @@ interface PageProps {
   params: { slug: string };
 }
 
-export default function ProjectPage({ params }: PageProps) {
+export default function ProjectPage({ params }: { params: { slug: string } }) {
   const { slug } = params;
   const project = projects[slug as keyof typeof projects];
 
