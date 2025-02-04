@@ -64,10 +64,6 @@ const projects = {
   }
 };
 
-interface PageProps {
-  params: { slug: string };
-}
-
 export default function ProjectPage({ params }: { params: { slug: string } }) {
   const { slug } = params;
   const project = projects[slug as keyof typeof projects];
