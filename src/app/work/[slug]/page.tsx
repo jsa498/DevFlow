@@ -59,7 +59,12 @@ const projects: Record<string, ProjectType> = {
   }
 };
 
-export default function Page({ params }: { params: { slug: string } }) {
-  const project = projects[params.slug];
+interface PageProps {
+  params: Promise<{ slug: string }>;
+}
+
+export default async function Page({ params }: PageProps) {
+  const { slug } = await params;
+  const project = projects[slug];
   return <ProjectContent project={project} />;
 } 
