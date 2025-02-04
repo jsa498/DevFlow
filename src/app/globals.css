@@ -4,12 +4,27 @@
 @tailwind components;
 @tailwind utilities;
 
+@keyframes gradientShift {
+  0% { opacity: 0.5; }
+  50% { opacity: 0.8; }
+  100% { opacity: 0.5; }
+}
+
+@keyframes pulse {
+  0% { opacity: 0.3; }
+  50% { opacity: 0.6; }
+  100% { opacity: 0.3; }
+}
+
 :root {
   --primary: #0066FF;
   --primary-dark: #0052CC;
   --secondary: #8B5CF6;
   --background: #FFFFFF;
   --foreground: #000000;
+  --foreground-rgb: 0, 0, 0;
+  --background-start-rgb: 214, 219, 220;
+  --background-end-rgb: 255, 255, 255;
 }
 
 @layer base {

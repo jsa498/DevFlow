@@ -6,6 +6,7 @@ import Navbar from '@/components/Navbar';
 import { useRef } from 'react';
 import ConsultationCTA from '@/components/ConsultationCTA';
 import Footer from '@/components/Footer';
+import HeroAnimation from '@/components/HeroAnimation';
 
 export default function Home() {
   const sectionRef = useRef(null);
@@ -28,25 +29,20 @@ export default function Home() {
   );
 
   return (
-    <main className="min-h-screen w-full overflow-x-hidden bg-black text-white">
+    <main className="min-h-screen w-full overflow-x-hidden bg-black text-white relative">
       <Navbar />
       
-      {/* Hero Video Section */}
+      {/* Hero Section */}
       <section className="relative h-[85vh] sm:h-screen w-full flex flex-col justify-end pb-8 sm:pb-16">
-        <div className="absolute inset-0 w-full h-full overflow-hidden">
-          <video
-            autoPlay
-            loop
-            muted
-            playsInline
-            className="w-full h-full object-contain md:object-cover"
-            style={{ filter: 'brightness(0.85) contrast(1.1)', backgroundColor: 'black' }}
-          >
-            <source src="/DevFlow.mp4" type="video/mp4" />
-          </video>
-          <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-transparent to-black/90" />
+        <div className="absolute inset-0 overflow-hidden">
+          <HeroAnimation />
+          {/* Gradient Overlays */}
+          <div className="absolute inset-0 bg-gradient-to-b from-black via-transparent to-black opacity-90" />
+          <div className="absolute inset-0 bg-gradient-to-r from-black via-transparent to-black opacity-80" />
+          <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black to-transparent" />
+          <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-black to-transparent" />
         </div>
-
+        
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}

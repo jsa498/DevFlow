@@ -1,0 +1,22 @@
+{
+  "name": "DevFlow - Custom Software Development Solutions",
+  "short_name": "DevFlow",
+  "description": "Expert software development services including web development, mobile apps, API integration, and enterprise solutions.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#2563eb",
+  "icons": [
+    {
+      "src": "/DevLogo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/DevLogo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+} 

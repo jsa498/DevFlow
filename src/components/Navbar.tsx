@@ -25,7 +25,7 @@ const Navbar = () => {
       className="fixed top-0 left-0 right-0 z-50 flex justify-center pt-1 sm:pt-4 w-full"
     >
       <nav className="w-full max-w-[720px] mx-2 sm:mx-4 px-1">
-        <div className="bg-black rounded-full shadow-lg backdrop-blur-sm h-12 sm:h-16 w-full">
+        <div className="bg-gradient-to-r from-black/95 via-black/90 to-black/95 rounded-full shadow-[0_0_15px_rgba(0,0,0,0.5)] backdrop-blur-md border border-white/20 shadow-[0_0_20px_rgba(255,255,255,0.05)] h-12 sm:h-16 w-full hover:border-white/30 hover:shadow-[0_0_25px_rgba(255,255,255,0.1)] transition-all duration-300">
           <div className="flex items-center justify-between h-full px-3 sm:px-4 relative">
             <Link href="/" className="flex-shrink-0 relative pt-3 sm:pt-4 -ml-1 sm:ml-0">
               <Image
@@ -44,7 +44,7 @@ const Navbar = () => {
                   <Link 
                     key={item.path}
                     href={item.path} 
-                    className="text-white bg-blue-600 px-5 sm:px-6 py-2 rounded-full hover:bg-blue-700 transition-all inline-block"
+                    className="text-white bg-blue-600 px-5 sm:px-6 py-2 rounded-full hover:bg-blue-700 transition-all inline-block shadow-lg"
                   >
                     {item.name}
                   </Link>
@@ -52,7 +52,7 @@ const Navbar = () => {
                   <Link 
                     key={item.path}
                     href={item.path} 
-                    className="text-white hover:text-blue-400 transition-colors"
+                    className="text-white/90 hover:text-white transition-colors font-medium"
                   >
                     {item.name}
                   </Link>
