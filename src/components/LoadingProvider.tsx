@@ -6,6 +6,7 @@ interface LoadingContextType {
   isLoading: boolean;
   setResourceLoaded: (resourceId: string) => void;
   addResource: (resourceId: string) => void;
+  resourceStatus: Map<string, boolean>;
 }
 
 const LoadingContext = createContext<LoadingContextType | null>(null);
@@ -24,49 +25,56 @@ interface LoadingProviderProps {
 
 export function LoadingProvider({ children }: LoadingProviderProps) {
   const [isLoading, setIsLoading] = useState(true);
-  const [resources] = useState<Set<string>>(new Set());
-  const [loadedResources] = useState<Set<string>>(new Set());
-  const [isInitialized, setIsInitialized] = useState(false);
+  const [resourceStatus] = useState<Map<string, boolean>>(new Map());
+  const [hasStartedLoading, setHasStartedLoading] = useState(false);
 
   const addResource = (resourceId: string) => {
-    if (!resources.has(resourceId)) {
-      resources.add(resourceId);
-      setIsInitialized(true); // Mark as initialized when first resource is added
+    if (!resourceStatus.has(resourceId)) {
+      resourceStatus.set(resourceId, false);
+      setHasStartedLoading(true);
     }
   };
 
   const setResourceLoaded = (resourceId: string) => {
-    if (!loadedResources.has(resourceId)) {
-      loadedResources.add(resourceId);
+    if (resourceStatus.has(resourceId)) {
+      resourceStatus.set(resourceId, true);
+      // Force a re-render
+      setHasStartedLoading(prev => !prev);
     }
   };
 
   useEffect(() => {
-    if (!isInitialized) return;
+    // Don't start checking until we've added at least one resource
+    if (!hasStartedLoading) return;
 
-    const allResourcesLoaded = resources.size > 0 && loadedResources.size >= resources.size;
-    
-    if (allResourcesLoaded) {
-      // Add a small delay to ensure smooth transition
+    // Check if all resources are loaded
+    const allLoaded = Array.from(resourceStatus.values()).every(status => status);
+    const hasResources = resourceStatus.size > 0;
+
+    if (hasResources && allLoaded) {
+      console.log('All resources loaded:', Array.from(resourceStatus.entries()));
       const timer = setTimeout(() => {
         setIsLoading(false);
-      }, 500);
-
+      }, 1000);
       return () => clearTimeout(timer);
     }
-  }, [resources.size, loadedResources.size, isInitialized]);
+  }, [hasStartedLoading, resourceStatus]);
 
-  // Ensure loading screen shows for at least 1 second
+  // Ensure minimum loading time
   useEffect(() => {
-    const minLoadingTime = setTimeout(() => {
-      setIsInitialized(true);
-    }, 1000);
-
-    return () => clearTimeout(minLoadingTime);
+    const minTimer = setTimeout(() => {
+      setHasStartedLoading(true);
+    }, 1500);
+    return () => clearTimeout(minTimer);
   }, []);
 
   return (
-    <LoadingContext.Provider value={{ isLoading, setResourceLoaded, addResource }}>
+    <LoadingContext.Provider value={{ 
+      isLoading, 
+      setResourceLoaded, 
+      addResource,
+      resourceStatus 
+    }}>
       {children}
     </LoadingContext.Provider>
   );
