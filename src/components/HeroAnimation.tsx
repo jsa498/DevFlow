@@ -1,19 +1,20 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import Spline from '@splinetool/react-spline';
 import type { Application, SPEObject } from '@splinetool/runtime';
-import { motion, AnimatePresence } from 'framer-motion';
 
-export default function HeroAnimation() {
-  // Refs for the robot body and head nodes.
+interface HeroAnimationProps {
+  onLoad?: () => void;
+}
+
+export default function HeroAnimation({ onLoad }: HeroAnimationProps) {
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const bodyRef = useRef<SPEObject | null>(null);
   const headRef = useRef<SPEObject | null>(null);
   const splineRef = useRef<Application | null>(null);
-
-  // Start with isLoading true
-  const [isLoading, setIsLoading] = useState(true);
-  const [isInteractive, setIsInteractive] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   // Store initial rotations for body and head separately.
   const initialBodyRotationRef = useRef({ x: 0, y: 0 });
@@ -25,39 +26,39 @@ export default function HeroAnimation() {
 
   const animationFrameRef = useRef<number | null>(null);
 
-  const videoRef = useRef<HTMLVideoElement>(null);
-
   // onLoad: Called when the Spline scene is loaded.
-  const onLoad = (splineApp: Application) => {
-    splineRef.current = splineApp;
-    // Get the robot body (e.g., named "Bot")
-    const robot = splineApp.findObjectByName('Bot');
-    if (robot) {
-      bodyRef.current = robot;
-      if (robot.rotation) {
-        initialBodyRotationRef.current = { x: robot.rotation.x, y: robot.rotation.y };
-        robot.rotation.x = initialBodyRotationRef.current.x;
-        robot.rotation.y = initialBodyRotationRef.current.y;
+  const handleLoad = (splineApp: Application) => {
+    try {
+      splineRef.current = splineApp;
+      // Get the robot body (e.g., named "Bot")
+      const robot = splineApp.findObjectByName('Bot');
+      if (robot) {
+        bodyRef.current = robot;
+        if (robot.rotation) {
+          initialBodyRotationRef.current = { x: robot.rotation.x, y: robot.rotation.y };
+          robot.rotation.x = initialBodyRotationRef.current.x;
+          robot.rotation.y = initialBodyRotationRef.current.y;
+        }
       }
-    }
-    
-    const head = splineApp.findObjectByName('Head');
-    if (head) {
-      headRef.current = head;
-      if (head.rotation) {
-        initialHeadRotationRef.current = { x: head.rotation.x, y: head.rotation.y };
-        currentHeadRotationRef.current = { ...initialHeadRotationRef.current };
-        targetHeadRotationRef.current = { ...initialHeadRotationRef.current };
+      
+      const head = splineApp.findObjectByName('Head');
+      if (head) {
+        headRef.current = head;
+        if (head.rotation) {
+          initialHeadRotationRef.current = { x: head.rotation.x, y: head.rotation.y };
+          currentHeadRotationRef.current = { ...initialHeadRotationRef.current };
+          targetHeadRotationRef.current = { ...initialHeadRotationRef.current };
+        }
       }
-    }
-    
-    // Add a small delay before hiding the loading animation
-    setTimeout(() => {
+
       setIsLoading(false);
-      setTimeout(() => {
-        setIsInteractive(true);
-      }, 100);
-    }, 300);
+      if (onLoad) {
+        onLoad();
+      }
+    } catch (error) {
+      console.error('Error loading Spline scene:', error);
+      setLoadError(error instanceof Error ? error.message : 'Failed to load 3D scene');
+    }
   };
 
   // Helper: Linear interpolation.
@@ -65,8 +66,6 @@ export default function HeroAnimation() {
     start + (end - start) * factor;
 
   // Mapping function for mouse input:
-  // Here we use a very small dead zone (0.05) so that movements near the center are captured,
-  // and we increase sensitivity (multiplier of 1.0). The exponent (1.2) slightly eases the response.
   const mapMouseInput = (
     value: number,
     deadZone = 0.05,
@@ -81,31 +80,30 @@ export default function HeroAnimation() {
   };
 
   useEffect(() => {
-    if (!isInteractive) return;
-
     // Mouse move handler: update the head's target rotation based on the mouse's position.
     const handleMouseMove = (e: MouseEvent) => {
-      // Normalize the mouse position to a [-1, 1] range.
-      const rawX = (e.clientX / window.innerWidth) * 2 - 1;
-      const rawY = (e.clientY / window.innerHeight) * 2 - 1;
+      if (!isLoading && headRef.current) {
+        // Normalize the mouse position to a [-1, 1] range.
+        const rawX = (e.clientX / window.innerWidth) * 2 - 1;
+        const rawY = (e.clientY / window.innerHeight) * 2 - 1;
 
-      // Process the raw values: now the mapping function uses a very small dead zone
-      // so that even small movements near center yield an output.
-      const mappedX = mapMouseInput(rawX, 0.05, 1.0, 1.2);
-      const mappedY = mapMouseInput(rawY, 0.05, 1.0, 1.2);
+        // Process the raw values
+        const mappedX = mapMouseInput(rawX, 0.05, 1.0, 1.2);
+        const mappedY = mapMouseInput(rawY, 0.05, 1.0, 1.2);
 
-      // Update the target head rotation.
-      // Vertical (Y) mouse movement influences rotation around the X axis (tilt),
-      // Horizontal (X) mouse movement influences rotation around the Y axis (turn).
-      targetHeadRotationRef.current = {
-        x: initialHeadRotationRef.current.x + mappedY,
-        y: initialHeadRotationRef.current.y + mappedX,
-      };
+        // Update the target head rotation.
+        targetHeadRotationRef.current = {
+          x: initialHeadRotationRef.current.x + mappedY,
+          y: initialHeadRotationRef.current.y + mappedX,
+        };
+      }
     };
 
     // Reset head rotation to initial when the mouse leaves.
     const handleMouseLeave = () => {
-      targetHeadRotationRef.current = { ...initialHeadRotationRef.current };
+      if (!isLoading && headRef.current) {
+        targetHeadRotationRef.current = { ...initialHeadRotationRef.current };
+      }
     };
 
     window.addEventListener('mousemove', handleMouseMove);
@@ -118,7 +116,7 @@ export default function HeroAnimation() {
       const deltaTime = (now - lastTime) / 1000; // in seconds
       lastTime = now;
 
-      if (headRef.current && headRef.current.rotation) {
+      if (!isLoading && headRef.current && headRef.current.rotation) {
         // Smoothing factor: adjust to make the head follow faster or slower.
         const smoothing = 5;
         const t = 1 - Math.exp(-smoothing * deltaTime);
@@ -148,49 +146,40 @@ export default function HeroAnimation() {
       window.removeEventListener('mouseleave', handleMouseLeave);
       if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
     };
-  }, [isInteractive]);
+  }, [isLoading]);
+
+  if (loadError) {
+    return (
+      <div className="w-full h-full flex items-center justify-center text-red-500">
+        <p>Failed to load 3D scene. Please try refreshing the page.</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="absolute inset-0" style={{ background: 'transparent' }}>
-      {/* Loading Animation */}
-      <AnimatePresence>
-        {isLoading && (
-          <motion.div
-            className="absolute inset-0 z-10"
-            initial={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            <video
-              ref={videoRef}
-              className="w-full h-full object-cover"
-              autoPlay
-              muted
-              loop
-              playsInline
-              style={{ background: 'transparent' }}
-            >
-              <source src="/load-page-animation.mp4" type="video/mp4" />
-            </video>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Main Spline Scene */}
-      <div style={{ opacity: isLoading ? 0 : 1, transition: 'opacity 0.5s ease-in-out' }}>
-        <Spline
-          scene="/nexbot_robot_character_concept.spline"
-          onLoad={onLoad}
-          style={{
-            width: '100%',
-            height: '100%',
-            background: 'transparent',
-            position: 'absolute',
-            top: 0,
-            left: 0,
-          }}
-        />
-      </div>
+    <div 
+      ref={containerRef}
+      className="w-full h-full"
+      style={{ 
+        position: 'relative',
+        minHeight: '100vh',
+        minWidth: '100vw',
+        overflow: 'hidden'
+      }}
+    >
+      <Spline
+        scene="/scene.splinecode"
+        onLoad={handleLoad}
+        style={{
+          width: '100%',
+          height: '100%',
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          background: 'transparent'
+        }}
+      />
     </div>
   );
 }

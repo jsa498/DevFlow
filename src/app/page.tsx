@@ -8,26 +8,36 @@ import ConsultationCTA from '@/components/ConsultationCTA';
 import Footer from '@/components/Footer';
 import HeroScene from '@/components/HeroScene';
 import StructuredData from '@/components/StructuredData';
-import GlowButton from '@/components/GlowButton';
+import RainbowButton from '@/components/RainbowButton';
 
 export default function Home() {
   const sectionRef = useRef(null);
   const { scrollYProgress } = useScroll({
     target: sectionRef,
-    offset: ["start end", "end start"]
+    offset: ["start end", "end start"],
+    layoutEffect: false
   });
 
   const translateX1 = useTransform(scrollYProgress,
     [0, 1],
-    ['-200%', '200%']
+    ['-200%', '200%'],
+    {
+      clamp: false
+    }
   );
   const translateX2 = useTransform(scrollYProgress,
     [0, 1],
-    ['200%', '-200%']
+    ['200%', '-200%'],
+    {
+      clamp: false
+    }
   );
   const opacity = useTransform(scrollYProgress, 
     [0.1, 0.2, 0.8, 0.9], 
-    [0, 1, 1, 0]
+    [0, 1, 1, 0],
+    {
+      clamp: true
+    }
   );
 
   const organizationData = {
@@ -65,49 +75,54 @@ export default function Home() {
       <Navbar />
       
       {/* Hero Section */}
-      <section className="relative h-screen w-full flex flex-col justify-end pb-8 sm:pb-16">
-        <div className="absolute inset-0 overflow-hidden hero-blend-bottom">
+      <section className="relative h-screen w-full flex flex-col justify-end pb-16 sm:pb-24">
+        <div className="absolute inset-0 flex items-center justify-center overflow-hidden hero-blend-bottom">
           <HeroScene />
         </div>
         
-        <div
-          className="relative z-10 flex flex-col sm:flex-row justify-center gap-3 sm:gap-6 px-4 sm:px-6 w-full sm:w-auto max-w-[300px] sm:max-w-none mx-auto mb-4 sm:mb-0"
-        >
-          <GlowButton
+        <div className="relative z-10 flex flex-row justify-center gap-3 px-3 w-full max-w-[360px] sm:max-w-[500px] mx-auto">
+          <RainbowButton
             href="/contact"
-            variant="primary"
-            className="text-base sm:text-lg py-4 sm:py-5"
+            className="text-sm sm:text-base whitespace-nowrap"
           >
             Start Your Project
-          </GlowButton>
-          <GlowButton
+          </RainbowButton>
+          <RainbowButton
             href="/work"
-            variant="secondary"
-            className="text-base sm:text-lg py-4 sm:py-5"
+            className="text-sm sm:text-base whitespace-nowrap"
           >
             Our Work
-          </GlowButton>
+          </RainbowButton>
         </div>
       </section>
 
       {/* Animated Text Section */}
       <section 
         ref={sectionRef}
-        className="relative bg-black min-h-[60vh] sm:min-h-[80vh] flex flex-col items-center justify-center overflow-hidden py-6 sm:py-20"
+        className="relative bg-black min-h-[60vh] sm:min-h-[80vh] flex flex-col items-center justify-center overflow-hidden py-6 sm:py-20 will-change-transform"
       >
         <div className="w-full max-w-[1400px] mx-auto px-4">
           <motion.div
             className="relative flex items-start mb-2 sm:mb-8"
             style={{ 
               translateX: translateX1,
-              opacity 
+              opacity,
+              willChange: 'transform',
+              backfaceVisibility: 'hidden',
+              WebkitBackfaceVisibility: 'hidden',
+              perspective: 1000,
+              WebkitPerspective: 1000
             }}
           >
-            <span className="text-6xl sm:text-8xl md:text-9xl lg:text-[12rem] font-black text-transparent bg-clip-text bg-gradient-to-r from-white via-white/90 to-white/80 leading-none whitespace-nowrap tracking-tight"
-                  style={{ 
-                    textShadow: '0 0 40px rgba(255,255,255,0.2)',
-                    fontFamily: "'Clash Display', sans-serif"
-                  }}>
+            <span 
+              className="text-6xl sm:text-8xl md:text-9xl lg:text-[12rem] font-black text-transparent bg-clip-text bg-gradient-to-r from-white via-white/90 to-white/80 leading-none whitespace-nowrap tracking-tight"
+              style={{ 
+                textShadow: '0 0 40px rgba(255,255,255,0.2)',
+                fontFamily: "'Clash Display', sans-serif",
+                transform: 'translateZ(0)',
+                WebkitTransform: 'translateZ(0)'
+              }}
+            >
               You Dream
             </span>
           </motion.div>
@@ -116,14 +131,23 @@ export default function Home() {
             className="relative flex items-end justify-end"
             style={{ 
               translateX: translateX2,
-              opacity 
+              opacity,
+              willChange: 'transform',
+              backfaceVisibility: 'hidden',
+              WebkitBackfaceVisibility: 'hidden',
+              perspective: 1000,
+              WebkitPerspective: 1000
             }}
           >
-            <span className="text-6xl sm:text-8xl md:text-9xl lg:text-[12rem] font-black text-transparent bg-clip-text bg-gradient-to-r from-white/80 via-white/90 to-white leading-none whitespace-nowrap tracking-tight"
-                  style={{ 
-                    textShadow: '0 0 40px rgba(255,255,255,0.2)',
-                    fontFamily: "'Clash Display', sans-serif"
-                  }}>
+            <span 
+              className="text-6xl sm:text-8xl md:text-9xl lg:text-[12rem] font-black text-transparent bg-clip-text bg-gradient-to-r from-white/80 via-white/90 to-white leading-none whitespace-nowrap tracking-tight"
+              style={{ 
+                textShadow: '0 0 40px rgba(255,255,255,0.2)',
+                fontFamily: "'Clash Display', sans-serif",
+                transform: 'translateZ(0)',
+                WebkitTransform: 'translateZ(0)'
+              }}
+            >
               We Build
             </span>
           </motion.div>

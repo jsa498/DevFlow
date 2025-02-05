@@ -1,13 +1,14 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { usePathname } from 'next/navigation';
-import GlowButton from '@/components/GlowButton';
+import RainbowButton from '@/components/RainbowButton';
 
 const navItems = [
+  { name: 'Home', path: '/', mobileOnly: true },
   { name: 'Services', path: '/services' },
   { name: 'Work', path: '/work' },
   { name: 'Resources', path: '/resources' },
@@ -16,6 +17,10 @@ const navItems = [
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
+
+  const handleNavigation = useCallback(() => {
+    setIsOpen(false);
+  }, []);
 
   return (
     <motion.header
@@ -27,7 +32,7 @@ const Navbar = () => {
       <nav className="w-full max-w-[720px] mx-2 sm:mx-4 px-1">
         <div className="bg-gradient-to-r from-black/95 via-black/90 to-black/95 rounded-full shadow-[0_0_15px_rgba(0,0,0,0.5)] backdrop-blur-md border border-white/20 shadow-[0_0_20px_rgba(255,255,255,0.05)] h-12 sm:h-16 w-full hover:border-white/30 hover:shadow-[0_0_25px_rgba(255,255,255,0.1)] transition-all duration-300">
           <div className="flex items-center justify-between h-full px-3 sm:px-4 relative">
-            <Link href="/" className="flex-shrink-0 relative pt-3 sm:pt-4 -ml-1 sm:ml-0">
+            <Link href="/" className="flex-shrink-0 relative pt-3 sm:pt-4 -ml-1 sm:ml-0" onClick={handleNavigation}>
               <Image
                 src="/DevLogo.png"
                 alt="DevFlow Logo"
@@ -39,22 +44,23 @@ const Navbar = () => {
             </Link>
 
             <div className="hidden md:flex items-center space-x-6 lg:space-x-8 ml-auto">
-              {navItems.map((item) => (
+              {navItems.filter(item => !item.mobileOnly).map((item) => (
                 <Link 
                   key={item.path}
                   href={item.path} 
                   className="text-white/90 hover:text-white transition-colors font-medium"
+                  onClick={handleNavigation}
                 >
                   {item.name}
                 </Link>
               ))}
-              <GlowButton
+              <RainbowButton
                 href="/contact"
-                variant="primary"
-                className="text-sm"
+                className="text-sm px-5 py-2 h-9"
+                onClick={handleNavigation}
               >
                 Let's Connect
-              </GlowButton>
+              </RainbowButton>
             </div>
 
             <button 
@@ -114,9 +120,9 @@ const Navbar = () => {
                       <Link
                         key={item.path}
                         href={item.path}
-                        onClick={() => setIsOpen(false)}
+                        onClick={handleNavigation}
                         className={`
-                          px-8 py-3 text-lg transition-all duration-300 rounded-full text-center
+                          px-6 py-2.5 text-base transition-all duration-300 rounded-full text-center
                           ${isActive 
                             ? 'text-black font-semibold bg-white/90 shadow-lg' 
                             : 'text-white hover:bg-white/10'
@@ -127,13 +133,15 @@ const Navbar = () => {
                       </Link>
                     );
                   })}
-                  <GlowButton
-                    href="/contact"
-                    variant="primary"
-                    onClick={() => setIsOpen(false)}
-                  >
-                    Let's Connect
-                  </GlowButton>
+                  <div className="flex justify-center pt-2">
+                    <RainbowButton
+                      href="/contact"
+                      className="text-sm px-6 py-2 h-10 w-auto"
+                      onClick={handleNavigation}
+                    >
+                      Let's Connect
+                    </RainbowButton>
+                  </div>
                 </div>
               </motion.div>
             </motion.div>
