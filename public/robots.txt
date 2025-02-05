@@ -2,6 +2,9 @@
 User-agent: *
 Allow: /
 
+# Host
+Host: https://devflow.ca
+
 # Sitemaps
 Sitemap: https://devflow.ca/sitemap.xml
 
@@ -11,4 +14,16 @@ Crawl-delay: 10
 # Disallow patterns
 Disallow: /api/
 Disallow: /_next/
-Disallow: /*? 
+Disallow: /*?
+
+# Google-specific
+User-agent: Googlebot
+Allow: /
+Disallow: /api/
+Disallow: /_next/
+
+# Bing-specific
+User-agent: Bingbot
+Allow: /
+Disallow: /api/
+Disallow: /_next/ 

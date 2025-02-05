@@ -6,6 +6,7 @@
   "display": "standalone",
   "background_color": "#000000",
   "theme_color": "#2563eb",
+  "orientation": "portrait-primary",
   "icons": [
     {
       "src": "/DevLogo.png",
@@ -16,7 +17,27 @@
     {
       "src": "/DevLogo.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
-  ]
+  ],
+  "shortcuts": [
+    {
+      "name": "Contact Us",
+      "short_name": "Contact",
+      "description": "Get in touch with DevFlow",
+      "url": "/contact",
+      "icons": [{ "src": "/DevLogo.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Our Work",
+      "short_name": "Work",
+      "description": "View our portfolio",
+      "url": "/work",
+      "icons": [{ "src": "/DevLogo.png", "sizes": "192x192" }]
+    }
+  ],
+  "categories": ["business", "technology", "development", "software"],
+  "screenshots": [],
+  "prefer_related_applications": false
 } 

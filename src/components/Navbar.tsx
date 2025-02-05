@@ -5,12 +5,12 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { usePathname } from 'next/navigation';
+import GlowButton from '@/components/GlowButton';
 
 const navItems = [
   { name: 'Services', path: '/services' },
   { name: 'Work', path: '/work' },
   { name: 'Resources', path: '/resources' },
-  { name: "Let's Connect", path: '/contact', isButton: true }
 ];
 
 const Navbar = () => {
@@ -40,24 +40,21 @@ const Navbar = () => {
 
             <div className="hidden md:flex items-center space-x-6 lg:space-x-8 ml-auto">
               {navItems.map((item) => (
-                item.isButton ? (
-                  <Link 
-                    key={item.path}
-                    href={item.path} 
-                    className="text-white bg-blue-600 px-5 sm:px-6 py-2 rounded-full hover:bg-blue-700 transition-all inline-block shadow-lg"
-                  >
-                    {item.name}
-                  </Link>
-                ) : (
-                  <Link 
-                    key={item.path}
-                    href={item.path} 
-                    className="text-white/90 hover:text-white transition-colors font-medium"
-                  >
-                    {item.name}
-                  </Link>
-                )
+                <Link 
+                  key={item.path}
+                  href={item.path} 
+                  className="text-white/90 hover:text-white transition-colors font-medium"
+                >
+                  {item.name}
+                </Link>
               ))}
+              <GlowButton
+                href="/contact"
+                variant="primary"
+                className="text-sm"
+              >
+                Let's Connect
+              </GlowButton>
             </div>
 
             <button 
@@ -118,26 +115,25 @@ const Navbar = () => {
                         key={item.path}
                         href={item.path}
                         onClick={() => setIsOpen(false)}
-                        className="flex items-center justify-center text-center"
+                        className={`
+                          px-8 py-3 text-lg transition-all duration-300 rounded-full text-center
+                          ${isActive 
+                            ? 'text-black font-semibold bg-white/90 shadow-lg' 
+                            : 'text-white hover:bg-white/10'
+                          }
+                        `}
                       >
-                        <motion.span
-                          whileHover={{ scale: 1.02 }}
-                          whileTap={{ scale: 0.95 }}
-                          className={`
-                            px-8 py-3 text-lg transition-all duration-300 rounded-full
-                            ${item.isButton 
-                              ? 'bg-blue-600 text-white hover:bg-blue-700 inline-block shadow-lg' 
-                              : isActive 
-                                ? 'text-black font-semibold bg-white/90 shadow-lg' 
-                                : 'text-white hover:bg-white/10'
-                            }
-                          `}
-                        >
-                          {item.name}
-                        </motion.span>
+                        {item.name}
                       </Link>
                     );
                   })}
+                  <GlowButton
+                    href="/contact"
+                    variant="primary"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    Let's Connect
+                  </GlowButton>
                 </div>
               </motion.div>
             </motion.div>

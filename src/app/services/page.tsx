@@ -5,6 +5,7 @@ import { CodeBracketIcon, GlobeAltIcon, DevicePhoneMobileIcon, CloudArrowUpIcon 
 import Navbar from '@/components/Navbar';
 import ConsultationCTA from '@/components/ConsultationCTA';
 import Footer from '@/components/Footer';
+import StructuredData from '@/components/StructuredData';
 
 const services = [
   {
@@ -49,8 +50,40 @@ const process = [
 ];
 
 export default function Services() {
+  const servicesStructuredData = services.map((service) => ({
+    '@type': 'Service',
+    name: service.title,
+    description: service.description,
+    provider: {
+      '@type': 'Organization',
+      name: 'DevFlow',
+      url: 'https://devflow.ca'
+    },
+    areaServed: {
+      '@type': 'Country',
+      name: 'Canada'
+    },
+    hasOfferCatalog: {
+      '@type': 'OfferCatalog',
+      name: 'Software Development Services',
+      itemListElement: [
+        {
+          '@type': 'Offer',
+          itemOffered: {
+            '@type': 'Service',
+            name: service.title,
+            description: service.description
+          }
+        }
+      ]
+    }
+  }));
+
   return (
     <main className="min-h-screen bg-[#0A0A0B] text-white overflow-hidden">
+      {servicesStructuredData.map((data, index) => (
+        <StructuredData key={index} type="Service" data={data} />
+      ))}
       <Navbar />
       
       {/* Hero Section */}

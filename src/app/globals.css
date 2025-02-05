@@ -4,32 +4,30 @@
 @tailwind components;
 @tailwind utilities;
 
-@keyframes gradientShift {
-  0% { opacity: 0.5; }
-  50% { opacity: 0.8; }
-  100% { opacity: 0.5; }
-}
-
-@keyframes pulse {
-  0% { opacity: 0.3; }
-  50% { opacity: 0.6; }
-  100% { opacity: 0.3; }
-}
-
 :root {
   --primary: #0066FF;
   --primary-dark: #0052CC;
   --secondary: #8B5CF6;
-  --background: #FFFFFF;
-  --foreground: #000000;
+  --background: transparent;
+  --foreground: #FFFFFF;
   --foreground-rgb: 0, 0, 0;
   --background-start-rgb: 214, 219, 220;
   --background-end-rgb: 255, 255, 255;
 }
 
 @layer base {
+  * {
+    /* Remove global transition */
+  }
+
   body {
-    @apply bg-background text-foreground antialiased;
+    @apply text-foreground antialiased;
+    background: transparent;
+  }
+
+  html {
+    background: #000000;
+    min-height: 100vh;
   }
 }
 
@@ -43,20 +41,6 @@
   }
 }
 
-/* Animations */
-@keyframes float {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-20px);
-  }
-}
-
-.animate-float {
-  animation: float 6s ease-in-out infinite;
-}
-
 /* Text Effects */
 .text-gradient {
   @apply bg-clip-text text-transparent bg-gradient-to-r from-white via-white/90 to-white/80;
@@ -65,3 +49,34 @@
 .text-shadow-glow {
   text-shadow: 0 0 40px rgba(255,255,255,0.2);
 }
+
+/* Hero Section Blend */
+.hero-blend-bottom {
+  mask-image: linear-gradient(to bottom, 
+    black 0%,
+    black 90%,
+    transparent 100%
+  );
+  -webkit-mask-image: linear-gradient(to bottom, 
+    black 0%,
+    black 90%,
+    transparent 100%
+  );
+}
+
+/* Particle Effects */
+.particle-canvas {
+  position: absolute !important;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.8;
+}
+
+.particle-canvas canvas {
+  position: absolute !important;
+  inset: 0;
+  mix-blend-mode: screen;
+}
+
+/* Remove all loading animation related styles */

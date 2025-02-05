@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import Spline from '@splinetool/react-spline';
 import type { Application, SPEObject } from '@splinetool/runtime';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function HeroAnimation() {
   // Refs for the robot body and head nodes.
@@ -22,6 +23,8 @@ export default function HeroAnimation() {
   const targetHeadRotationRef = useRef({ x: 0, y: 0 });
 
   const animationFrameRef = useRef<number | null>(null);
+
+  const [isLoaded, setIsLoaded] = useState(false);
 
   // onLoad: Called when the Spline scene is loaded.
   const onLoad = (splineApp: Application) => {
@@ -47,7 +50,9 @@ export default function HeroAnimation() {
         targetHeadRotationRef.current = { ...initialHeadRotationRef.current };
       }
     }
-    // Enable interactivity immediately (or use a very short delay, e.g., 100ms)
+    // Set loaded state first
+    setIsLoaded(true);
+    // Enable interactivity after a short delay
     setTimeout(() => {
       setIsInteractive(true);
     }, 100);
@@ -144,60 +149,20 @@ export default function HeroAnimation() {
   }, [isInteractive]);
 
   return (
-    <div style={{ width: '100vw', height: '100vh', position: 'relative' }}>
-      {/* Background gradient */}
-      <div
-        className="absolute inset-0"
-        style={{
-          background:
-            'radial-gradient(circle at center, rgba(25, 25, 112, 0.3) 0%, rgba(0, 0, 0, 0.95) 100%)',
-          animation: 'gradientShift 10s ease infinite',
-          zIndex: -1,
-        }}
-      />
-      {/* Ambient light */}
-      <div
-        className="absolute inset-0"
-        style={{
-          background:
-            'radial-gradient(circle at 50% 50%, rgba(65, 105, 225, 0.1) 0%, transparent 60%)',
-          animation: 'pulse 4s ease-in-out infinite',
-          zIndex: -1,
-        }}
-      />
-      {/* Spline scene */}
+    <div className="absolute inset-0" style={{ background: 'transparent' }}>
       <Spline
         scene="/nexbot_robot_character_concept.spline"
         onLoad={onLoad}
         style={{
           width: '100%',
           height: '100%',
+          background: 'transparent',
           position: 'absolute',
           top: 0,
           left: 0,
+          opacity: 1
         }}
       />
-      {/* Vignette overlay */}
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          background:
-            'radial-gradient(circle at center, transparent 40%, rgba(0,0,0,0.4) 100%)',
-          zIndex: 1,
-        }}
-      />
-      <style>{`
-        @keyframes gradientShift {
-          0% { opacity: 0.5; }
-          50% { opacity: 0.8; }
-          100% { opacity: 0.5; }
-        }
-        @keyframes pulse {
-          0% { opacity: 0.3; }
-          50% { opacity: 0.6; }
-          100% { opacity: 0.3; }
-        }
-      `}</style>
     </div>
   );
 }

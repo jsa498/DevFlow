@@ -6,7 +6,9 @@ import Navbar from '@/components/Navbar';
 import { useRef } from 'react';
 import ConsultationCTA from '@/components/ConsultationCTA';
 import Footer from '@/components/Footer';
-import HeroAnimation from '@/components/HeroAnimation';
+import HeroScene from '@/components/HeroScene';
+import StructuredData from '@/components/StructuredData';
+import GlowButton from '@/components/GlowButton';
 
 export default function Home() {
   const sectionRef = useRef(null);
@@ -28,40 +30,64 @@ export default function Home() {
     [0, 1, 1, 0]
   );
 
+  const organizationData = {
+    name: 'DevFlow',
+    url: 'https://devflow.ca',
+    logo: 'https://devflow.ca/DevLogo.png',
+    description: 'Expert software development services including web development, mobile apps, API integration, and enterprise solutions.',
+    address: {
+      '@type': 'PostalAddress',
+      addressLocality: 'Vancouver',
+      addressRegion: 'BC',
+      addressCountry: 'CA'
+    },
+    sameAs: [
+      'https://linkedin.com/company/devflow',
+      'https://github.com/devflow'
+    ]
+  };
+
+  const websiteData = {
+    name: 'DevFlow',
+    url: 'https://devflow.ca',
+    description: 'Expert software development services including web development, mobile apps, API integration, and enterprise solutions.',
+    potentialAction: {
+      '@type': 'SearchAction',
+      'target': 'https://devflow.ca/search?q={search_term_string}',
+      'query-input': 'required name=search_term_string'
+    }
+  };
+
   return (
-    <main className="min-h-screen w-full overflow-x-hidden bg-black text-white relative">
+    <main className="min-h-screen w-full overflow-x-hidden text-white relative bg-transparent">
+      <StructuredData type="Organization" data={organizationData} />
+      <StructuredData type="WebSite" data={websiteData} />
       <Navbar />
       
       {/* Hero Section */}
-      <section className="relative h-[85vh] sm:h-screen w-full flex flex-col justify-end pb-8 sm:pb-16">
-        <div className="absolute inset-0 overflow-hidden">
-          <HeroAnimation />
-          {/* Gradient Overlays */}
-          <div className="absolute inset-0 bg-gradient-to-b from-black via-transparent to-black opacity-90" />
-          <div className="absolute inset-0 bg-gradient-to-r from-black via-transparent to-black opacity-80" />
-          <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black to-transparent" />
-          <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-black to-transparent" />
+      <section className="relative h-screen w-full flex flex-col justify-end pb-8 sm:pb-16">
+        <div className="absolute inset-0 overflow-hidden hero-blend-bottom">
+          <HeroScene />
         </div>
         
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.5 }}
+        <div
           className="relative z-10 flex flex-col sm:flex-row justify-center gap-3 sm:gap-6 px-4 sm:px-6 w-full sm:w-auto max-w-[300px] sm:max-w-none mx-auto mb-4 sm:mb-0"
         >
-          <Link 
-            href="/contact" 
-            className="bg-blue-600 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-full text-base sm:text-lg font-medium hover:bg-blue-500 transition-all hover:scale-105 hover:shadow-[0_0_20px_rgba(37,99,235,0.5)] transform duration-200 text-center"
+          <GlowButton
+            href="/contact"
+            variant="primary"
+            className="text-base sm:text-lg py-4 sm:py-5"
           >
             Start Your Project
-          </Link>
-          <Link 
-            href="/work" 
-            className="border-2 border-white/80 bg-black/20 backdrop-blur-sm text-white px-6 sm:px-8 py-3 sm:py-4 rounded-full text-base sm:text-lg font-medium hover:bg-white/20 hover:border-white transition-all hover:scale-105 hover:shadow-[0_0_20px_rgba(255,255,255,0.3)] transform duration-200 text-center"
+          </GlowButton>
+          <GlowButton
+            href="/work"
+            variant="secondary"
+            className="text-base sm:text-lg py-4 sm:py-5"
           >
             Our Work
-          </Link>
-        </motion.div>
+          </GlowButton>
+        </div>
       </section>
 
       {/* Animated Text Section */}
