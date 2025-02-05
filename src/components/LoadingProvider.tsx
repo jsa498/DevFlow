@@ -1,3 +1,5 @@
+'use client';
+
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 
 interface LoadingContextType {
@@ -20,32 +22,48 @@ interface LoadingProviderProps {
   children: ReactNode;
 }
 
-// Create a variable to track if this is the initial load
-let isInitialLoad = true;
-
 export function LoadingProvider({ children }: LoadingProviderProps) {
-  const [isLoading, setIsLoading] = useState(isInitialLoad);
+  const [isLoading, setIsLoading] = useState(true);
   const [resources] = useState<Set<string>>(new Set());
   const [loadedResources] = useState<Set<string>>(new Set());
+  const [isInitialized, setIsInitialized] = useState(false);
 
   const addResource = (resourceId: string) => {
     if (!resources.has(resourceId)) {
       resources.add(resourceId);
+      setIsInitialized(true); // Mark as initialized when first resource is added
     }
   };
 
   const setResourceLoaded = (resourceId: string) => {
     if (!loadedResources.has(resourceId)) {
       loadedResources.add(resourceId);
-      // Only trigger state update if we've loaded all resources
-      if (resources.size > 0 && resources.size === loadedResources.size) {
-        setTimeout(() => {
-          setIsLoading(false);
-          isInitialLoad = false;
-        }, 500);
-      }
     }
   };
+
+  useEffect(() => {
+    if (!isInitialized) return;
+
+    const allResourcesLoaded = resources.size > 0 && loadedResources.size >= resources.size;
+    
+    if (allResourcesLoaded) {
+      // Add a small delay to ensure smooth transition
+      const timer = setTimeout(() => {
+        setIsLoading(false);
+      }, 500);
+
+      return () => clearTimeout(timer);
+    }
+  }, [resources.size, loadedResources.size, isInitialized]);
+
+  // Ensure loading screen shows for at least 1 second
+  useEffect(() => {
+    const minLoadingTime = setTimeout(() => {
+      setIsInitialized(true);
+    }, 1000);
+
+    return () => clearTimeout(minLoadingTime);
+  }, []);
 
   return (
     <LoadingContext.Provider value={{ isLoading, setResourceLoaded, addResource }}>
