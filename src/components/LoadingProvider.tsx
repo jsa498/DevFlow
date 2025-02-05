@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, ReactNode, useRef } from 'react';
 
 interface LoadingContextType {
   isLoading: boolean;
@@ -25,47 +25,77 @@ interface LoadingProviderProps {
 
 export function LoadingProvider({ children }: LoadingProviderProps) {
   const [isLoading, setIsLoading] = useState(true);
-  const [resourceStatus] = useState<Map<string, boolean>>(new Map());
-  const [hasStartedLoading, setHasStartedLoading] = useState(false);
+  const resourceStatusRef = useRef(new Map<string, boolean>());
+  const [updateTrigger, setUpdateTrigger] = useState(0);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const maxLoadingTimeRef = useRef<NodeJS.Timeout | null>(null);
 
   const addResource = (resourceId: string) => {
-    if (!resourceStatus.has(resourceId)) {
-      resourceStatus.set(resourceId, false);
-      setHasStartedLoading(true);
+    if (!resourceStatusRef.current.has(resourceId)) {
+      resourceStatusRef.current.set(resourceId, false);
+      setUpdateTrigger(prev => prev + 1);
     }
   };
 
   const setResourceLoaded = (resourceId: string) => {
-    if (resourceStatus.has(resourceId)) {
-      resourceStatus.set(resourceId, true);
-      // Force a re-render
-      setHasStartedLoading(prev => !prev);
+    if (resourceStatusRef.current.has(resourceId)) {
+      resourceStatusRef.current.set(resourceId, true);
+      setUpdateTrigger(prev => prev + 1);
     }
   };
 
-  useEffect(() => {
-    // Don't start checking until we've added at least one resource
-    if (!hasStartedLoading) return;
+  // Cleanup function for timeouts
+  const cleanupTimeouts = () => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+    if (maxLoadingTimeRef.current) {
+      clearTimeout(maxLoadingTimeRef.current);
+      maxLoadingTimeRef.current = null;
+    }
+  };
 
-    // Check if all resources are loaded
-    const allLoaded = Array.from(resourceStatus.values()).every(status => status);
-    const hasResources = resourceStatus.size > 0;
+  // Set maximum loading time
+  useEffect(() => {
+    maxLoadingTimeRef.current = setTimeout(() => {
+      console.log('Max loading time reached, forcing completion');
+      setIsLoading(false);
+    }, 8000); // 8 seconds maximum
+
+    return cleanupTimeouts;
+  }, []);
+
+  // Handle resource loading status
+  useEffect(() => {
+    const allLoaded = Array.from(resourceStatusRef.current.values()).every(status => status);
+    const hasResources = resourceStatusRef.current.size > 0;
 
     if (hasResources && allLoaded) {
-      console.log('All resources loaded:', Array.from(resourceStatus.entries()));
-      const timer = setTimeout(() => {
-        setIsLoading(false);
-      }, 1000);
-      return () => clearTimeout(timer);
-    }
-  }, [hasStartedLoading, resourceStatus]);
+      console.log('All resources loaded:', Array.from(resourceStatusRef.current.entries()));
+      
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
 
-  // Ensure minimum loading time
+      timeoutRef.current = setTimeout(() => {
+        setIsLoading(false);
+        cleanupTimeouts();
+      }, 200);
+    }
+
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, [updateTrigger]);
+
   useEffect(() => {
-    const minTimer = setTimeout(() => {
-      setHasStartedLoading(true);
-    }, 1500);
-    return () => clearTimeout(minTimer);
+    return () => {
+      cleanupTimeouts();
+      resourceStatusRef.current.clear();
+    };
   }, []);
 
   return (
@@ -73,7 +103,7 @@ export function LoadingProvider({ children }: LoadingProviderProps) {
       isLoading, 
       setResourceLoaded, 
       addResource,
-      resourceStatus 
+      resourceStatus: resourceStatusRef.current 
     }}>
       {children}
     </LoadingContext.Provider>

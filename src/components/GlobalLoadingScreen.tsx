@@ -97,7 +97,8 @@ export default function GlobalLoadingScreen() {
               muted
               loop
               playsInline
-              poster="/DevLogo.png"
+              preload="auto"
+              style={{ opacity: 1 }}
             >
               <source src="/load-page-animation.mp4" type="video/mp4" />
             </video>

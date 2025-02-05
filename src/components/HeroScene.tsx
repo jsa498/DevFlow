@@ -1,23 +1,29 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import HeroAnimation from './HeroAnimation';
-import { AnimatePresence, motion } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useLoading } from './LoadingProvider';
 
 export default function HeroScene() {
+  const [shouldInitSpline, setShouldInitSpline] = useState(false);
   const [isInteractive, setIsInteractive] = useState(false);
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const { addResource, setResourceLoaded } = useLoading();
+  const { isLoading } = useLoading();
 
-  // Register the Spline model as a resource to load
-  useState(() => {
-    addResource('spline-model');
-  });
+  // Only initialize Spline after loading is complete
+  useEffect(() => {
+    if (!isLoading) {
+      // Add a small delay to ensure smooth transition
+      const timer = setTimeout(() => {
+        setShouldInitSpline(true);
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [isLoading]);
 
   const handleSplineLoad = () => {
+    console.log('Spline model loaded and ready to animate');
     setIsInteractive(true);
-    setResourceLoaded('spline-model');
   };
 
   return (
@@ -31,42 +37,16 @@ export default function HeroScene() {
         }}
       />
       
-      {/* Loading Animation */}
-      <AnimatePresence>
-        {!isInteractive && (
-          <motion.div
-            className="absolute inset-0 z-10"
-            initial={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            <video
-              ref={videoRef}
-              className="w-full h-full object-cover"
-              autoPlay
-              muted
-              loop
-              playsInline
-            >
-              <source src="/load-page-animation.mp4" type="video/mp4" />
-            </video>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
       {/* Spline Robot */}
-      <div className="absolute inset-0" style={{ zIndex: 1 }}>
-        <div 
-          style={{ 
-            width: '100%',
-            height: '100%',
-            opacity: isInteractive ? 1 : 0,
-            transition: 'opacity 0.5s ease-in-out'
-          }}
-        >
-          <HeroAnimation onLoad={handleSplineLoad} />
-        </div>
-      </div>
+      <motion.div 
+        className="absolute inset-0" 
+        style={{ zIndex: 1 }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: isInteractive ? 1 : 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        {shouldInitSpline && <HeroAnimation onLoad={handleSplineLoad} />}
+      </motion.div>
 
       {/* Ambient light effect - more subtle */}
       <div 
