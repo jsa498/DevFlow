@@ -11,7 +11,8 @@ export default function HeroAnimation() {
   const headRef = useRef<SPEObject | null>(null);
   const splineRef = useRef<Application | null>(null);
 
-  // Use a single flag to enable interactivity (and hence head tracking)
+  // Start with isLoading true
+  const [isLoading, setIsLoading] = useState(true);
   const [isInteractive, setIsInteractive] = useState(false);
 
   // Store initial rotations for body and head separately.
@@ -24,7 +25,7 @@ export default function HeroAnimation() {
 
   const animationFrameRef = useRef<number | null>(null);
 
-  const [isLoaded, setIsLoaded] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   // onLoad: Called when the Spline scene is loaded.
   const onLoad = (splineApp: Application) => {
@@ -35,12 +36,11 @@ export default function HeroAnimation() {
       bodyRef.current = robot;
       if (robot.rotation) {
         initialBodyRotationRef.current = { x: robot.rotation.x, y: robot.rotation.y };
-        // Freeze the body rotation if desired:
         robot.rotation.x = initialBodyRotationRef.current.x;
         robot.rotation.y = initialBodyRotationRef.current.y;
       }
     }
-    // Get the head node (adjust 'Head' to your actual node name)
+    
     const head = splineApp.findObjectByName('Head');
     if (head) {
       headRef.current = head;
@@ -50,12 +50,14 @@ export default function HeroAnimation() {
         targetHeadRotationRef.current = { ...initialHeadRotationRef.current };
       }
     }
-    // Set loaded state first
-    setIsLoaded(true);
-    // Enable interactivity after a short delay
+    
+    // Add a small delay before hiding the loading animation
     setTimeout(() => {
-      setIsInteractive(true);
-    }, 100);
+      setIsLoading(false);
+      setTimeout(() => {
+        setIsInteractive(true);
+      }, 100);
+    }, 300);
   };
 
   // Helper: Linear interpolation.
@@ -150,19 +152,45 @@ export default function HeroAnimation() {
 
   return (
     <div className="absolute inset-0" style={{ background: 'transparent' }}>
-      <Spline
-        scene="/nexbot_robot_character_concept.spline"
-        onLoad={onLoad}
-        style={{
-          width: '100%',
-          height: '100%',
-          background: 'transparent',
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          opacity: 1
-        }}
-      />
+      {/* Loading Animation */}
+      <AnimatePresence>
+        {isLoading && (
+          <motion.div
+            className="absolute inset-0 z-10"
+            initial={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            <video
+              ref={videoRef}
+              className="w-full h-full object-cover"
+              autoPlay
+              muted
+              loop
+              playsInline
+              style={{ background: 'transparent' }}
+            >
+              <source src="/load-page-animation.mp4" type="video/mp4" />
+            </video>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Main Spline Scene */}
+      <div style={{ opacity: isLoading ? 0 : 1, transition: 'opacity 0.5s ease-in-out' }}>
+        <Spline
+          scene="/nexbot_robot_character_concept.spline"
+          onLoad={onLoad}
+          style={{
+            width: '100%',
+            height: '100%',
+            background: 'transparent',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+          }}
+        />
+      </div>
     </div>
   );
 }
