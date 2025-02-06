@@ -10,6 +10,7 @@ export default function ResourcePreloader() {
   const { addResource, setResourceLoaded } = useLoading();
   const loadingAttemptsRef = useRef(new Map<string, number>());
   const cleanupFunctionsRef = useRef<Map<string, () => void>>(new Map());
+  const progressIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     // Register all resources immediately
@@ -25,6 +26,10 @@ export default function ResourcePreloader() {
       
       const cleanup = () => {
         clearTimeout(timeout);
+        if (progressIntervalRef.current) {
+          clearInterval(progressIntervalRef.current);
+          progressIntervalRef.current = null;
+        }
         video.remove();
         cleanupFunctionsRef.current.delete(resource);
       };
@@ -33,6 +38,19 @@ export default function ResourcePreloader() {
 
       return new Promise<void>((resolve, reject) => {
         video.preload = 'auto';
+
+        // Track loading progress for mobile
+        if ('buffered' in video) {
+          progressIntervalRef.current = setInterval(() => {
+            if (video.buffered.length > 0) {
+              const progress = (video.buffered.end(0) / video.duration) * 100;
+              if (progress > 0 && progress < 100) {
+                // Update progress without marking as fully loaded
+                setResourceLoaded(`${resource}-progress`);
+              }
+            }
+          }, 100);
+        }
 
         const handleLoad = () => {
           console.log('Video loaded successfully:', resource);
@@ -49,14 +67,11 @@ export default function ResourcePreloader() {
         video.addEventListener('loadeddata', handleLoad, { once: true });
         video.addEventListener('error', handleError, { once: true });
 
-        // Set timeout for video loading
         timeout = setTimeout(() => {
           console.log('Video load timeout:', resource);
-          video.removeEventListener('loadeddata', handleLoad);
-          video.removeEventListener('error', handleError);
           cleanup();
           reject(new Error('Video load timeout'));
-        }, 5000);
+        }, 3000);
 
         video.src = resource;
       });
@@ -81,12 +96,10 @@ export default function ResourcePreloader() {
         loadingAttemptsRef.current.set(resource, attempts + 1);
         console.error(`Failed to load ${resource}, attempt ${attempts + 1}/2`);
         
-        // Retry after a delay
         const retryTimeout = setTimeout(() => {
           loadResource(resource);
         }, 1000);
 
-        // Store cleanup function
         cleanupFunctionsRef.current.set(`retry-${resource}`, () => clearTimeout(retryTimeout));
       }
     };
@@ -96,7 +109,9 @@ export default function ResourcePreloader() {
 
     // Cleanup function
     return () => {
-      // Execute all cleanup functions
+      if (progressIntervalRef.current) {
+        clearInterval(progressIntervalRef.current);
+      }
       cleanupFunctionsRef.current.forEach(cleanup => cleanup());
       cleanupFunctionsRef.current.clear();
       loadingAttemptsRef.current.clear();
