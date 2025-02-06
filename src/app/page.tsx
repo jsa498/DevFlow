@@ -80,7 +80,7 @@ export default function Home() {
           <HeroScene />
         </div>
         
-        <div className="relative z-10 flex flex-row justify-center gap-3 px-3 w-full max-w-[360px] sm:max-w-[500px] mx-auto">
+        <div className="relative z-10 flex flex-row justify-center gap-3 px-3 w-full max-w-[360px] sm:max-w-[500px] mx-auto mb-8 sm:mb-0">
           <RainbowButton
             href="/contact"
             className="text-sm sm:text-base whitespace-nowrap"
@@ -99,7 +99,7 @@ export default function Home() {
       {/* Animated Text Section */}
       <section 
         ref={sectionRef}
-        className="relative bg-black min-h-[60vh] sm:min-h-[80vh] flex flex-col items-center justify-center overflow-hidden py-6 sm:py-20 will-change-transform"
+        className="relative bg-black min-h-[60vh] sm:min-h-[80vh] flex flex-col items-center justify-center overflow-hidden py-6 sm:py-20"
       >
         <div className="w-full max-w-[1400px] mx-auto px-4">
           <motion.div
@@ -111,7 +111,9 @@ export default function Home() {
               backfaceVisibility: 'hidden',
               WebkitBackfaceVisibility: 'hidden',
               perspective: 1000,
-              WebkitPerspective: 1000
+              WebkitPerspective: 1000,
+              transform: 'translate3d(0,0,0)',
+              WebkitTransform: 'translate3d(0,0,0)'
             }}
           >
             <span 
@@ -119,8 +121,8 @@ export default function Home() {
               style={{ 
                 textShadow: '0 0 40px rgba(255,255,255,0.2)',
                 fontFamily: "'Clash Display', sans-serif",
-                transform: 'translateZ(0)',
-                WebkitTransform: 'translateZ(0)'
+                transform: 'translate3d(0,0,0)',
+                WebkitTransform: 'translate3d(0,0,0)'
               }}
             >
               You Dream
@@ -136,7 +138,9 @@ export default function Home() {
               backfaceVisibility: 'hidden',
               WebkitBackfaceVisibility: 'hidden',
               perspective: 1000,
-              WebkitPerspective: 1000
+              WebkitPerspective: 1000,
+              transform: 'translate3d(0,0,0)',
+              WebkitTransform: 'translate3d(0,0,0)'
             }}
           >
             <span 
@@ -144,8 +148,8 @@ export default function Home() {
               style={{ 
                 textShadow: '0 0 40px rgba(255,255,255,0.2)',
                 fontFamily: "'Clash Display', sans-serif",
-                transform: 'translateZ(0)',
-                WebkitTransform: 'translateZ(0)'
+                transform: 'translate3d(0,0,0)',
+                WebkitTransform: 'translate3d(0,0,0)'
               }}
             >
               We Build

@@ -29,6 +29,7 @@ export function LoadingProvider({ children }: LoadingProviderProps) {
   const [updateTrigger, setUpdateTrigger] = useState(0);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const maxLoadingTimeRef = useRef<NodeJS.Timeout | null>(null);
+  const minLoadTimeMetRef = useRef(false);
 
   const addResource = (resourceId: string) => {
     if (!resourceStatusRef.current.has(resourceId)) {
@@ -56,12 +57,22 @@ export function LoadingProvider({ children }: LoadingProviderProps) {
     }
   };
 
+  // Ensure minimum loading time for better UX
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      minLoadTimeMetRef.current = true;
+      setUpdateTrigger(prev => prev + 1);
+    }, 500); // Reduced from 1000ms to 500ms
+
+    return () => clearTimeout(timer);
+  }, []);
+
   // Set maximum loading time
   useEffect(() => {
     maxLoadingTimeRef.current = setTimeout(() => {
       console.log('Max loading time reached, forcing completion');
       setIsLoading(false);
-    }, 8000); // 8 seconds maximum
+    }, 4000); // Reduced from 5s to 4s maximum
 
     return cleanupTimeouts;
   }, []);
@@ -71,17 +82,12 @@ export function LoadingProvider({ children }: LoadingProviderProps) {
     const allLoaded = Array.from(resourceStatusRef.current.values()).every(status => status);
     const hasResources = resourceStatusRef.current.size > 0;
 
-    if (hasResources && allLoaded) {
+    if (hasResources && allLoaded && minLoadTimeMetRef.current) {
       console.log('All resources loaded:', Array.from(resourceStatusRef.current.entries()));
       
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-
-      timeoutRef.current = setTimeout(() => {
-        setIsLoading(false);
-        cleanupTimeouts();
-      }, 200);
+      // Remove the additional timeout and transition immediately
+      setIsLoading(false);
+      cleanupTimeouts();
     }
 
     return () => {
