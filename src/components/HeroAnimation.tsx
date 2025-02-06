@@ -81,44 +81,60 @@ export default function HeroAnimation({ onLoad }: HeroAnimationProps) {
 
   useEffect(() => {
     // Mouse move handler: update the head's target rotation based on the mouse's position.
-    const handleMouseMove = (e: MouseEvent) => {
+    const handleMouseMove = (e: MouseEvent | TouchEvent) => {
       if (!isLoading && headRef.current) {
-        // Normalize the mouse position to a [-1, 1] range.
-        const rawX = (e.clientX / window.innerWidth) * 2 - 1;
-        const rawY = (e.clientY / window.innerHeight) * 2 - 1;
+        // Get coordinates whether it's mouse or touch
+        const clientX = 'touches' in e ? e.touches[0].clientX : (e as MouseEvent).clientX;
+        const clientY = 'touches' in e ? e.touches[0].clientY : (e as MouseEvent).clientY;
 
-        // Process the raw values
-        const mappedX = mapMouseInput(rawX, 0.05, 1.0, 1.2);
-        const mappedY = mapMouseInput(rawY, 0.05, 1.0, 1.2);
+        // Normalize the position to a [-1, 1] range.
+        const rawX = (clientX / window.innerWidth) * 2 - 1;
+        const rawY = (clientY / window.innerHeight) * 2 - 1;
 
-        // Update the target head rotation.
-        targetHeadRotationRef.current = {
-          x: initialHeadRotationRef.current.x + mappedY,
-          y: initialHeadRotationRef.current.y + mappedX,
-        };
+        // Process the raw values with optimized mapping
+        const mappedX = mapMouseInput(rawX, 0.05, 0.8, 1.2); // Reduced sensitivity
+        const mappedY = mapMouseInput(rawY, 0.05, 0.8, 1.2);
+
+        // Update the target head rotation with throttling
+        requestAnimationFrame(() => {
+          targetHeadRotationRef.current = {
+            x: initialHeadRotationRef.current.x + mappedY,
+            y: initialHeadRotationRef.current.y + mappedX,
+          };
+        });
       }
     };
 
-    // Reset head rotation to initial when the mouse leaves.
-    const handleMouseLeave = () => {
+    // Reset head rotation to initial when interaction ends
+    const handleInteractionEnd = () => {
       if (!isLoading && headRef.current) {
         targetHeadRotationRef.current = { ...initialHeadRotationRef.current };
       }
     };
 
+    // Add both mouse and touch event listeners
     window.addEventListener('mousemove', handleMouseMove);
-    window.addEventListener('mouseleave', handleMouseLeave);
+    window.addEventListener('touchmove', handleMouseMove, { passive: true });
+    window.addEventListener('mouseleave', handleInteractionEnd);
+    window.addEventListener('touchend', handleInteractionEnd);
 
     let lastTime = performance.now();
+    let frameCount = 0;
+    const FRAME_THROTTLE = 2; // Only update every 2nd frame
 
     const animate = () => {
+      frameCount++;
+      if (frameCount % FRAME_THROTTLE !== 0) {
+        animationFrameRef.current = requestAnimationFrame(animate);
+        return;
+      }
+
       const now = performance.now();
-      const deltaTime = (now - lastTime) / 1000; // in seconds
+      const deltaTime = (now - lastTime) / (1000 * FRAME_THROTTLE);
       lastTime = now;
 
       if (!isLoading && headRef.current && headRef.current.rotation) {
-        // Smoothing factor: adjust to make the head follow faster or slower.
-        const smoothing = 5;
+        const smoothing = 4; // Slightly reduced for smoother movement
         const t = 1 - Math.exp(-smoothing * deltaTime);
 
         currentHeadRotationRef.current.x = lerp(
@@ -132,8 +148,11 @@ export default function HeroAnimation({ onLoad }: HeroAnimationProps) {
           t
         );
 
-        headRef.current.rotation.x = currentHeadRotationRef.current.x;
-        headRef.current.rotation.y = currentHeadRotationRef.current.y;
+        // Apply transforms with hardware acceleration
+        if (headRef.current.rotation) {
+          headRef.current.rotation.x = currentHeadRotationRef.current.x;
+          headRef.current.rotation.y = currentHeadRotationRef.current.y;
+        }
       }
 
       animationFrameRef.current = requestAnimationFrame(animate);
@@ -143,7 +162,9 @@ export default function HeroAnimation({ onLoad }: HeroAnimationProps) {
 
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('mouseleave', handleMouseLeave);
+      window.removeEventListener('touchmove', handleMouseMove);
+      window.removeEventListener('mouseleave', handleInteractionEnd);
+      window.removeEventListener('touchend', handleInteractionEnd);
       if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
     };
   }, [isLoading]);
@@ -164,7 +185,11 @@ export default function HeroAnimation({ onLoad }: HeroAnimationProps) {
         position: 'relative',
         minHeight: '100vh',
         minWidth: '100vw',
-        overflow: 'hidden'
+        overflow: 'hidden',
+        transform: 'translateZ(0)', // Force GPU acceleration
+        backfaceVisibility: 'hidden',
+        perspective: '1000px',
+        willChange: 'transform'
       }}
     >
       <Spline
@@ -176,8 +201,10 @@ export default function HeroAnimation({ onLoad }: HeroAnimationProps) {
           position: 'absolute',
           top: '50%',
           left: '50%',
-          transform: 'translate(-50%, -50%)',
-          background: 'transparent'
+          transform: 'translate3d(-50%, -50%, 0)', // Use translate3d for GPU acceleration
+          background: 'transparent',
+          willChange: 'transform',
+          backfaceVisibility: 'hidden'
         }}
       />
     </div>

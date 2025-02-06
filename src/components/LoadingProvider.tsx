@@ -7,6 +7,7 @@ interface LoadingContextType {
   setResourceLoaded: (resourceId: string) => void;
   addResource: (resourceId: string) => void;
   resourceStatus: Map<string, boolean>;
+  progress: number;
 }
 
 const LoadingContext = createContext<LoadingContextType | null>(null);
@@ -30,6 +31,8 @@ export function LoadingProvider({ children }: LoadingProviderProps) {
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const maxLoadingTimeRef = useRef<NodeJS.Timeout | null>(null);
   const minLoadTimeMetRef = useRef(false);
+  const progressIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const [simulatedProgress, setSimulatedProgress] = useState(0);
 
   const addResource = (resourceId: string) => {
     if (!resourceStatusRef.current.has(resourceId)) {
@@ -55,14 +58,36 @@ export function LoadingProvider({ children }: LoadingProviderProps) {
       clearTimeout(maxLoadingTimeRef.current);
       maxLoadingTimeRef.current = null;
     }
+    if (progressIntervalRef.current) {
+      clearInterval(progressIntervalRef.current);
+      progressIntervalRef.current = null;
+    }
   };
+
+  // Simulated progress for better UX
+  useEffect(() => {
+    // Start simulated progress
+    progressIntervalRef.current = setInterval(() => {
+      setSimulatedProgress(prev => {
+        if (prev >= 90) return prev; // Cap at 90% until real completion
+        const increment = Math.max(0.5, (90 - prev) / 10); // Slower as it progresses
+        return Math.min(90, prev + increment);
+      });
+    }, 100);
+
+    return () => {
+      if (progressIntervalRef.current) {
+        clearInterval(progressIntervalRef.current);
+      }
+    };
+  }, []);
 
   // Ensure minimum loading time for better UX
   useEffect(() => {
     const timer = setTimeout(() => {
       minLoadTimeMetRef.current = true;
       setUpdateTrigger(prev => prev + 1);
-    }, 500); // Reduced from 1000ms to 500ms
+    }, 500);
 
     return () => clearTimeout(timer);
   }, []);
@@ -72,7 +97,8 @@ export function LoadingProvider({ children }: LoadingProviderProps) {
     maxLoadingTimeRef.current = setTimeout(() => {
       console.log('Max loading time reached, forcing completion');
       setIsLoading(false);
-    }, 4000); // Reduced from 5s to 4s maximum
+      setSimulatedProgress(100);
+    }, 4000);
 
     return cleanupTimeouts;
   }, []);
@@ -84,8 +110,7 @@ export function LoadingProvider({ children }: LoadingProviderProps) {
 
     if (hasResources && allLoaded && minLoadTimeMetRef.current) {
       console.log('All resources loaded:', Array.from(resourceStatusRef.current.entries()));
-      
-      // Remove the additional timeout and transition immediately
+      setSimulatedProgress(100);
       setIsLoading(false);
       cleanupTimeouts();
     }
@@ -109,7 +134,8 @@ export function LoadingProvider({ children }: LoadingProviderProps) {
       isLoading, 
       setResourceLoaded, 
       addResource,
-      resourceStatus: resourceStatusRef.current 
+      resourceStatus: resourceStatusRef.current,
+      progress: simulatedProgress
     }}>
       {children}
     </LoadingContext.Provider>
