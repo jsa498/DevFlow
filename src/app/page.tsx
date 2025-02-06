@@ -12,25 +12,22 @@ import RainbowButton from '@/components/RainbowButton';
 
 export default function Home() {
   const sectionRef = useRef(null);
-  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
-  
   const { scrollYProgress } = useScroll({
     target: sectionRef,
     offset: ["start end", "end start"],
     layoutEffect: false
   });
 
-  // Optimize transforms for mobile
   const translateX1 = useTransform(scrollYProgress,
     [0, 1],
-    isMobile ? ['-100%', '100%'] : ['-200%', '200%'],
+    ['-200%', '200%'],
     {
       clamp: false
     }
   );
   const translateX2 = useTransform(scrollYProgress,
     [0, 1],
-    isMobile ? ['100%', '-100%'] : ['200%', '-200%'],
+    ['200%', '-200%'],
     {
       clamp: false
     }
@@ -113,16 +110,16 @@ export default function Home() {
               willChange: 'transform',
               backfaceVisibility: 'hidden',
               WebkitBackfaceVisibility: 'hidden',
+              perspective: 1000,
+              WebkitPerspective: 1000,
               transform: 'translate3d(0,0,0)',
-              WebkitTransform: 'translate3d(0,0,0)',
-              WebkitFontSmoothing: 'antialiased',
-              WebkitOverflowScrolling: 'touch'
+              WebkitTransform: 'translate3d(0,0,0)'
             }}
           >
             <span 
-              className="text-5xl sm:text-8xl md:text-9xl lg:text-[12rem] font-black text-transparent bg-clip-text bg-gradient-to-r from-white via-white/90 to-white/80 leading-none whitespace-nowrap tracking-tight"
+              className="text-6xl sm:text-8xl md:text-9xl lg:text-[12rem] font-black text-transparent bg-clip-text bg-gradient-to-r from-white via-white/90 to-white/80 leading-none whitespace-nowrap tracking-tight"
               style={{ 
-                textShadow: isMobile ? 'none' : '0 0 40px rgba(255,255,255,0.2)',
+                textShadow: '0 0 40px rgba(255,255,255,0.2)',
                 fontFamily: "'Clash Display', sans-serif",
                 transform: 'translate3d(0,0,0)',
                 WebkitTransform: 'translate3d(0,0,0)'
@@ -140,16 +137,16 @@ export default function Home() {
               willChange: 'transform',
               backfaceVisibility: 'hidden',
               WebkitBackfaceVisibility: 'hidden',
+              perspective: 1000,
+              WebkitPerspective: 1000,
               transform: 'translate3d(0,0,0)',
-              WebkitTransform: 'translate3d(0,0,0)',
-              WebkitFontSmoothing: 'antialiased',
-              WebkitOverflowScrolling: 'touch'
+              WebkitTransform: 'translate3d(0,0,0)'
             }}
           >
             <span 
-              className="text-5xl sm:text-8xl md:text-9xl lg:text-[12rem] font-black text-transparent bg-clip-text bg-gradient-to-r from-white/80 via-white/90 to-white leading-none whitespace-nowrap tracking-tight"
+              className="text-6xl sm:text-8xl md:text-9xl lg:text-[12rem] font-black text-transparent bg-clip-text bg-gradient-to-r from-white/80 via-white/90 to-white leading-none whitespace-nowrap tracking-tight"
               style={{ 
-                textShadow: isMobile ? 'none' : '0 0 40px rgba(255,255,255,0.2)',
+                textShadow: '0 0 40px rgba(255,255,255,0.2)',
                 fontFamily: "'Clash Display', sans-serif",
                 transform: 'translate3d(0,0,0)',
                 WebkitTransform: 'translate3d(0,0,0)'
