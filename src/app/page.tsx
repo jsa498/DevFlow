@@ -100,11 +100,6 @@ export default function Home() {
       <section 
         ref={sectionRef}
         className="relative bg-black min-h-[60vh] sm:min-h-[80vh] flex flex-col items-center justify-center overflow-hidden py-6 sm:py-20"
-        style={{
-          perspective: '1000px',
-          backfaceVisibility: 'hidden',
-          transform: 'translateZ(0)'
-        }}
       >
         <div className="w-full max-w-[1400px] mx-auto px-4">
           <motion.div
@@ -112,24 +107,15 @@ export default function Home() {
             style={{ 
               translateX: translateX1,
               opacity,
-              willChange: 'transform, opacity',
-              backfaceVisibility: 'hidden',
-              WebkitBackfaceVisibility: 'hidden',
-              perspective: 1000,
-              WebkitPerspective: 1000,
-              transform: 'translate3d(0,0,0)',
-              WebkitTransform: 'translate3d(0,0,0)'
+              willChange: 'transform',
+              transform: 'translateZ(0)'
             }}
           >
             <span 
               className="text-6xl sm:text-8xl md:text-9xl lg:text-[12rem] font-black text-transparent bg-clip-text bg-gradient-to-r from-white via-white/90 to-white/80 leading-none whitespace-nowrap tracking-tight"
               style={{ 
                 textShadow: '0 0 40px rgba(255,255,255,0.2)',
-                fontFamily: "'Clash Display', sans-serif",
-                transform: 'translate3d(0,0,0)',
-                WebkitTransform: 'translate3d(0,0,0)',
-                backfaceVisibility: 'hidden',
-                WebkitBackfaceVisibility: 'hidden'
+                fontFamily: "'Clash Display', sans-serif"
               }}
             >
               You Dream
@@ -141,24 +127,15 @@ export default function Home() {
             style={{ 
               translateX: translateX2,
               opacity,
-              willChange: 'transform, opacity',
-              backfaceVisibility: 'hidden',
-              WebkitBackfaceVisibility: 'hidden',
-              perspective: 1000,
-              WebkitPerspective: 1000,
-              transform: 'translate3d(0,0,0)',
-              WebkitTransform: 'translate3d(0,0,0)'
+              willChange: 'transform',
+              transform: 'translateZ(0)'
             }}
           >
             <span 
               className="text-6xl sm:text-8xl md:text-9xl lg:text-[12rem] font-black text-transparent bg-clip-text bg-gradient-to-r from-white/80 via-white/90 to-white leading-none whitespace-nowrap tracking-tight"
               style={{ 
                 textShadow: '0 0 40px rgba(255,255,255,0.2)',
-                fontFamily: "'Clash Display', sans-serif",
-                transform: 'translate3d(0,0,0)',
-                WebkitTransform: 'translate3d(0,0,0)',
-                backfaceVisibility: 'hidden',
-                WebkitBackfaceVisibility: 'hidden'
+                fontFamily: "'Clash Display', sans-serif"
               }}
             >
               We Build

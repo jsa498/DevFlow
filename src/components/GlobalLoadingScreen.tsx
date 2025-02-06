@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useLoading } from './LoadingProvider';
 
 export default function GlobalLoadingScreen() {
-  const { isLoading, progress } = useLoading();
+  const { isLoading, resourceStatus } = useLoading();
   const videoRef = useRef<HTMLVideoElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
 
@@ -22,7 +22,6 @@ export default function GlobalLoadingScreen() {
     };
 
     if (isLoading && overlayRef.current) {
-      // Prevent all interactions
       document.body.style.overflow = 'hidden';
       document.body.style.position = 'fixed';
       document.body.style.width = '100%';
@@ -30,18 +29,15 @@ export default function GlobalLoadingScreen() {
       document.body.style.top = '0';
       document.body.style.left = '0';
 
-      // Add touch event prevention
       overlayRef.current.addEventListener('touchmove', preventTouchMove, { passive: false });
       overlayRef.current.addEventListener('wheel', preventScroll, { passive: false });
       overlayRef.current.addEventListener('scroll', preventScroll, { passive: false });
 
-      // Ensure video plays
       if (videoRef.current) {
         videoRef.current.currentTime = 0;
         const playPromise = videoRef.current.play();
         if (playPromise !== undefined) {
           playPromise.catch(() => {
-            // Video playback failed - show poster instead
             if (videoRef.current) {
               videoRef.current.style.opacity = '0';
             }
@@ -51,7 +47,6 @@ export default function GlobalLoadingScreen() {
     }
 
     return () => {
-      // Cleanup
       document.body.style.overflow = '';
       document.body.style.position = '';
       document.body.style.width = '';
@@ -67,6 +62,11 @@ export default function GlobalLoadingScreen() {
     };
   }, [isLoading]);
 
+  // Calculate loading progress
+  const loadedCount = Array.from(resourceStatus.values()).filter(Boolean).length;
+  const totalCount = resourceStatus.size;
+  const progress = totalCount > 0 ? Math.round((loadedCount / totalCount) * 100) : 0;
+
   return (
     <AnimatePresence>
       {isLoading && (
@@ -81,10 +81,7 @@ export default function GlobalLoadingScreen() {
             touchAction: 'none',
             userSelect: 'none',
             WebkitTapHighlightColor: 'transparent',
-            WebkitOverflowScrolling: 'touch',
-            transform: 'translateZ(0)',
-            backfaceVisibility: 'hidden',
-            WebkitBackfaceVisibility: 'hidden'
+            WebkitOverflowScrolling: 'touch'
           }}
         >
           <div className="relative w-full h-full flex flex-col items-center justify-center">
@@ -96,31 +93,22 @@ export default function GlobalLoadingScreen() {
               loop
               playsInline
               preload="auto"
-              style={{ 
-                opacity: 1,
-                transform: 'translateZ(0)',
-                backfaceVisibility: 'hidden',
-                WebkitBackfaceVisibility: 'hidden'
-              }}
+              style={{ opacity: 1 }}
             >
               <source src="/load-page-animation.mp4" type="video/mp4" />
             </video>
             <div className="absolute bottom-8 left-0 right-0 flex flex-col items-center justify-center gap-2">
               <div className="text-white/80 text-sm font-medium">
-                Loading ({Math.round(progress)}%)
+                Loading{totalCount > 0 ? ` (${progress}%)` : '...'}
               </div>
-              <div className="w-48 h-1 bg-white/20 rounded-full overflow-hidden">
-                <motion.div 
-                  className="h-full bg-white/80 rounded-full"
-                  style={{ 
-                    width: `${progress}%`,
-                    transform: 'translateZ(0)',
-                    backfaceVisibility: 'hidden',
-                    WebkitBackfaceVisibility: 'hidden'
-                  }}
-                  transition={{ duration: 0.3 }}
-                />
-              </div>
+              {totalCount > 0 && (
+                <div className="w-48 h-1 bg-white/20 rounded-full overflow-hidden">
+                  <div 
+                    className="h-full bg-white/80 rounded-full transition-all duration-300"
+                    style={{ width: `${progress}%` }}
+                  />
+                </div>
+              )}
             </div>
           </div>
         </motion.div>
