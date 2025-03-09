@@ -7,37 +7,56 @@ import { useSupabaseAuth } from '@/components/providers/supabase-auth-provider';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, Calendar, Edit, PlusCircle, Trash2, Users } from 'lucide-react';
+import { ArrowLeft, Calendar, Users, Clock } from 'lucide-react';
 import { toast } from 'sonner';
+import { Badge } from '@/components/ui/badge';
 
-type CoachingService = {
+type CoachingSession = {
   id: string;
+  user_id: string;
+  subscription_id: string | null;
   title: string;
-  description: string;
-  initial_consultation_price: number;
-  image_url: string | null;
-  published: boolean;
+  description: string | null;
+  scheduled_at: string;
+  duration_minutes: number;
+  status: 'scheduled' | 'completed' | 'canceled' | 'no_show';
+  notes: string | null;
+  meeting_url: string | null;
   created_at: string;
   updated_at: string;
-  subscription_plans?: SubscriptionPlan[];
+  user?: {
+    email: string;
+    full_name: string | null;
+  };
 };
 
-type SubscriptionPlan = {
+type UserSubscription = {
   id: string;
-  service_id: string;
-  title: string;
-  description: string;
-  price_per_month: number;
-  sessions_per_month: number;
+  user_id: string;
+  plan_id: string;
+  stripe_subscription_id: string | null;
+  status: 'active' | 'canceled' | 'past_due' | 'unpaid' | 'trialing';
+  current_period_start: string;
+  current_period_end: string;
   created_at: string;
   updated_at: string;
+  user?: {
+    email: string;
+    full_name: string | null;
+  };
+  plan?: {
+    title: string;
+    sessions_per_month: number;
+  };
 };
 
 export default function CoachingManagementPage() {
   const router = useRouter();
   const { user, isLoading: authLoading } = useSupabaseAuth();
-  const [services, setServices] = useState<CoachingService[]>([]);
+  const [sessions, setSessions] = useState<CoachingSession[]>([]);
+  const [subscriptions, setSubscriptions] = useState<UserSubscription[]>([]);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<'sessions' | 'subscriptions'>('sessions');
   
   // Check if user is admin
   const isAdmin = user?.app_metadata?.role === 'admin';
@@ -49,109 +68,65 @@ export default function CoachingManagementPage() {
     }
     
     if (user && isAdmin) {
-      fetchCoachingServices();
+      fetchCoachingData();
     }
   }, [user, authLoading, isAdmin, router]);
   
-  const fetchCoachingServices = async () => {
+  const fetchCoachingData = async () => {
     try {
       setLoading(true);
       const supabase = createClientComponentClient();
       
-      // Get all coaching services
-      const { data: servicesData, error: servicesError } = await supabase
-        .from('coaching_services')
-        .select('*')
+      // Fetch coaching sessions
+      const { data: sessionsData, error: sessionsError } = await supabase
+        .from('coaching_sessions')
+        .select(`
+          *,
+          user:user_id (
+            email,
+            full_name
+          )
+        `)
+        .order('scheduled_at', { ascending: false });
+        
+      if (sessionsError) {
+        console.error('Error fetching coaching sessions:', sessionsError);
+        toast.error('Failed to load coaching sessions');
+        setSessions([]);
+      } else {
+        setSessions(sessionsData || []);
+      }
+      
+      // Fetch user subscriptions
+      const { data: subscriptionsData, error: subscriptionsError } = await supabase
+        .from('user_subscriptions')
+        .select(`
+          *,
+          user:user_id (
+            email,
+            full_name
+          ),
+          plan:plan_id (
+            title,
+            sessions_per_month
+          )
+        `)
         .order('created_at', { ascending: false });
         
-      if (servicesError) {
-        console.error('Error fetching coaching services:', servicesError);
-        toast.error('Failed to load coaching services');
-        setServices([]);
-        return;
+      if (subscriptionsError) {
+        console.error('Error fetching user subscriptions:', subscriptionsError);
+        toast.error('Failed to load user subscriptions');
+        setSubscriptions([]);
+      } else {
+        setSubscriptions(subscriptionsData || []);
       }
-      
-      // Get subscription plans for each service
-      const servicesWithPlans = await Promise.all(
-        servicesData.map(async (service) => {
-          const { data: plansData, error: plansError } = await supabase
-            .from('coaching_subscription_plans')
-            .select('*')
-            .eq('service_id', service.id)
-            .order('price_per_month', { ascending: true });
-            
-          if (plansError) {
-            console.error(`Error fetching plans for service ${service.id}:`, plansError);
-            return { ...service, subscription_plans: [] };
-          }
-          
-          return { ...service, subscription_plans: plansData || [] };
-        })
-      );
-      
-      setServices(servicesWithPlans);
     } catch (error) {
-      console.error('Error in fetchCoachingServices:', error);
-      toast.error('Failed to load coaching services');
-      setServices([]);
+      console.error('Error in fetchCoachingData:', error);
+      toast.error('Failed to load coaching data');
+      setSessions([]);
+      setSubscriptions([]);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleDeleteService = async (serviceId: string) => {
-    if (!confirm('Are you sure you want to delete this coaching service? This will also delete all associated subscription plans and cannot be undone.')) {
-      return;
-    }
-
-    try {
-      const supabase = createClientComponentClient();
-      
-      // Delete the coaching service (cascade will handle subscription plans)
-      const { error } = await supabase
-        .from('coaching_services')
-        .delete()
-        .eq('id', serviceId);
-        
-      if (error) {
-        console.error('Error deleting coaching service:', error);
-        toast.error('Failed to delete coaching service');
-      } else {
-        // Update the local state
-        setServices(services.filter(service => service.id !== serviceId));
-        toast.success('Coaching service deleted successfully');
-      }
-    } catch (error) {
-      console.error('Error deleting coaching service:', error);
-      toast.error('Failed to delete coaching service');
-    }
-  };
-
-  const handleTogglePublished = async (service: CoachingService) => {
-    try {
-      const supabase = createClientComponentClient();
-      
-      // Update the published status
-      const { error } = await supabase
-        .from('coaching_services')
-        .update({ published: !service.published })
-        .eq('id', service.id);
-        
-      if (error) {
-        console.error('Error updating coaching service:', error);
-        toast.error('Failed to update coaching service');
-      } else {
-        // Update the local state
-        setServices(services.map(s => 
-          s.id === service.id 
-            ? { ...s, published: !service.published } 
-            : s
-        ));
-        toast.success(`Service ${service.published ? 'unpublished' : 'published'} successfully`);
-      }
-    } catch (error) {
-      console.error('Error updating coaching service:', error);
-      toast.error('Failed to update coaching service');
     }
   };
   
@@ -179,6 +154,19 @@ export default function CoachingManagementPage() {
     );
   }
   
+  // Format date for display
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+  
   return (
     <div className="container py-8 space-y-6">
       <div className="flex items-center justify-between">
@@ -189,141 +177,141 @@ export default function CoachingManagementPage() {
             </Link>
           </Button>
           <h1 className="text-3xl font-bold">Coaching Management</h1>
-          <p className="text-muted-foreground mt-1">Create and manage coaching services and subscription plans</p>
+          <p className="text-muted-foreground mt-1">Manage coaching sessions and user subscriptions</p>
         </div>
         <div className="flex gap-3">
-          <Button asChild>
-            <Link href="/dashboard/admin/coaching/create" className="flex items-center gap-2">
-              <PlusCircle className="h-4 w-4" /> Create New Service
-            </Link>
+          <Button 
+            variant={activeTab === 'sessions' ? 'default' : 'outline'} 
+            onClick={() => setActiveTab('sessions')}
+            className="flex items-center gap-2"
+          >
+            <Calendar className="h-4 w-4" /> Sessions
           </Button>
-          <Button asChild variant="outline">
-            <Link href="/dashboard/admin/coaching/sessions" className="flex items-center gap-2">
-              <Calendar className="h-4 w-4" /> Manage Sessions
+          <Button 
+            variant={activeTab === 'subscriptions' ? 'default' : 'outline'} 
+            onClick={() => setActiveTab('subscriptions')}
+            className="flex items-center gap-2"
+          >
+            <Users className="h-4 w-4" /> Subscriptions
+          </Button>
+          <Button variant="outline" size="sm" asChild>
+            <Link href="/dashboard/admin/coaching/calendar" className="flex items-center gap-2">
+              <Calendar className="h-4 w-4" /> Calendar View
             </Link>
           </Button>
         </div>
       </div>
       
-      {services.length === 0 ? (
+      {activeTab === 'sessions' && (
         <Card>
           <CardHeader>
-            <CardTitle>No Coaching Services Found</CardTitle>
+            <CardTitle>Coaching Sessions</CardTitle>
             <CardDescription>
-              You haven't created any coaching services yet. Get started by creating your first service.
+              View and manage all coaching sessions
             </CardDescription>
           </CardHeader>
-          <CardFooter>
-            <Button asChild>
-              <Link href="/dashboard/admin/coaching/create" className="flex items-center gap-2">
-                <PlusCircle className="h-4 w-4" /> Create Your First Service
-              </Link>
-            </Button>
-          </CardFooter>
+          <CardContent>
+            {sessions.length === 0 ? (
+              <div className="text-center py-8">
+                <p className="text-muted-foreground">No coaching sessions found</p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse">
+                  <thead>
+                    <tr className="border-b">
+                      <th className="text-left py-3 px-4">Client</th>
+                      <th className="text-left py-3 px-4">Title</th>
+                      <th className="text-left py-3 px-4">Scheduled At</th>
+                      <th className="text-left py-3 px-4">Duration</th>
+                      <th className="text-left py-3 px-4">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {sessions.map((session) => (
+                      <tr key={session.id} className="border-b hover:bg-muted/50">
+                        <td className="py-3 px-4">
+                          {session.user?.full_name || session.user?.email || 'Unknown User'}
+                        </td>
+                        <td className="py-3 px-4">{session.title}</td>
+                        <td className="py-3 px-4">{formatDate(session.scheduled_at)}</td>
+                        <td className="py-3 px-4">{session.duration_minutes} minutes</td>
+                        <td className="py-3 px-4">
+                          <Badge 
+                            variant={
+                              session.status === 'scheduled' ? 'default' :
+                              session.status === 'completed' ? 'secondary' :
+                              session.status === 'canceled' ? 'destructive' : 'outline'
+                            }
+                          >
+                            {session.status.charAt(0).toUpperCase() + session.status.slice(1)}
+                          </Badge>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </CardContent>
         </Card>
-      ) : (
-        <div className="space-y-8">
-          {services.map((service) => (
-            <Card key={service.id} className="overflow-hidden">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle className="text-2xl">{service.title}</CardTitle>
-                    <CardDescription className="mt-1">
-                      Initial Consultation: ${service.initial_consultation_price.toFixed(2)}
-                    </CardDescription>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    {service.published ? (
-                      <span className="px-2 py-1 text-xs bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100 rounded-full">
-                        Published
-                      </span>
-                    ) : (
-                      <span className="px-2 py-1 text-xs bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-100 rounded-full">
-                        Draft
-                      </span>
-                    )}
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="mb-6">
-                  <p className="text-muted-foreground">{service.description}</p>
-                </div>
-                
-                <div className="mb-4">
-                  <h3 className="text-lg font-semibold mb-2">Subscription Plans</h3>
-                  {service.subscription_plans && service.subscription_plans.length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      {service.subscription_plans.map((plan) => (
-                        <Card key={plan.id} className="bg-muted/40">
-                          <CardHeader className="p-4">
-                            <CardTitle className="text-base">{plan.title}</CardTitle>
-                          </CardHeader>
-                          <CardContent className="p-4 pt-0">
-                            <div className="flex items-center justify-between mb-2">
-                              <span className="text-sm text-muted-foreground">Price:</span>
-                              <span className="font-medium">${plan.price_per_month.toFixed(2)}/month</span>
-                            </div>
-                            <div className="flex items-center justify-between">
-                              <span className="text-sm text-muted-foreground">Sessions:</span>
-                              <span className="font-medium">{plan.sessions_per_month} per month</span>
-                            </div>
-                          </CardContent>
-                          <CardFooter className="p-4 pt-0">
-                            <Button asChild variant="outline" size="sm" className="w-full">
-                              <Link href={`/dashboard/admin/coaching/plans/${plan.id}`}>
-                                Edit Plan
-                              </Link>
-                            </Button>
-                          </CardFooter>
-                        </Card>
-                      ))}
-                      <Card className="bg-muted/20 border-dashed border-2 flex items-center justify-center h-[180px]">
-                        <Button asChild variant="ghost" className="flex flex-col h-full w-full">
-                          <Link href={`/dashboard/admin/coaching/plans/create?serviceId=${service.id}`} className="flex flex-col items-center justify-center gap-2 h-full">
-                            <PlusCircle className="h-8 w-8 text-muted-foreground" />
-                            <span className="text-muted-foreground">Add Plan</span>
-                          </Link>
-                        </Button>
-                      </Card>
-                    </div>
-                  ) : (
-                    <div className="text-center py-6 bg-muted/20 rounded-lg">
-                      <p className="text-muted-foreground mb-4">No subscription plans added yet.</p>
-                      <Button asChild size="sm">
-                        <Link href={`/dashboard/admin/coaching/plans/create?serviceId=${service.id}`}>
-                          <PlusCircle className="h-4 w-4 mr-2" /> Add Subscription Plan
-                        </Link>
-                      </Button>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-              <CardFooter className="flex justify-end gap-2 border-t bg-muted/10 p-4">
-                <Button 
-                  variant={service.published ? "outline" : "default"} 
-                  size="sm"
-                  onClick={() => handleTogglePublished(service)}
-                >
-                  {service.published ? 'Unpublish' : 'Publish'}
-                </Button>
-                <Button asChild variant="outline" size="sm">
-                  <Link href={`/dashboard/admin/coaching/${service.id}`}>
-                    <Edit className="h-4 w-4 mr-2" /> Edit Service
-                  </Link>
-                </Button>
-                <Button 
-                  variant="destructive" 
-                  size="sm"
-                  onClick={() => handleDeleteService(service.id)}
-                >
-                  <Trash2 className="h-4 w-4 mr-2" /> Delete
-                </Button>
-              </CardFooter>
-            </Card>
-          ))}
-        </div>
+      )}
+      
+      {activeTab === 'subscriptions' && (
+        <Card>
+          <CardHeader>
+            <CardTitle>User Subscriptions</CardTitle>
+            <CardDescription>
+              View and manage all user subscriptions
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {subscriptions.length === 0 ? (
+              <div className="text-center py-8">
+                <p className="text-muted-foreground">No user subscriptions found</p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse">
+                  <thead>
+                    <tr className="border-b">
+                      <th className="text-left py-3 px-4">User</th>
+                      <th className="text-left py-3 px-4">Plan</th>
+                      <th className="text-left py-3 px-4">Sessions/Month</th>
+                      <th className="text-left py-3 px-4">Status</th>
+                      <th className="text-left py-3 px-4">Current Period</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {subscriptions.map((subscription) => (
+                      <tr key={subscription.id} className="border-b hover:bg-muted/50">
+                        <td className="py-3 px-4">
+                          {subscription.user?.full_name || subscription.user?.email || 'Unknown User'}
+                        </td>
+                        <td className="py-3 px-4">{subscription.plan?.title || 'Unknown Plan'}</td>
+                        <td className="py-3 px-4">{subscription.plan?.sessions_per_month || 'N/A'}</td>
+                        <td className="py-3 px-4">
+                          <Badge 
+                            variant={
+                              subscription.status === 'active' ? 'secondary' :
+                              subscription.status === 'canceled' ? 'destructive' :
+                              subscription.status === 'past_due' ? 'default' : 'outline'
+                            }
+                          >
+                            {subscription.status.charAt(0).toUpperCase() + subscription.status.slice(1)}
+                          </Badge>
+                        </td>
+                        <td className="py-3 px-4">
+                          {new Date(subscription.current_period_start).toLocaleDateString()} - {new Date(subscription.current_period_end).toLocaleDateString()}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
       )}
     </div>
   );

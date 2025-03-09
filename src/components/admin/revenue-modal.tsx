@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -15,6 +16,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Input } from "@/components/ui/input";
+import { Search } from "lucide-react";
 import { formatDistanceToNow } from 'date-fns';
 
 interface Purchase {
@@ -41,8 +44,24 @@ interface RevenueModalProps {
 }
 
 export function RevenueModal({ isOpen, onClose, purchases }: RevenueModalProps) {
+  const [searchQuery, setSearchQuery] = useState('');
+  
   // Calculate total revenue
   const totalRevenue = purchases.reduce((acc, purchase) => acc + purchase.amount, 0);
+  
+  // Filter purchases based on search query
+  const filteredPurchases = purchases.filter(purchase => {
+    const customerName = (
+      purchase.user?.full_name || 
+      purchase.user?.user_metadata?.full_name || 
+      purchase.user?.email || 
+      ''
+    ).toLowerCase();
+    const productTitle = (purchase.product?.title || '').toLowerCase();
+    const query = searchQuery.toLowerCase();
+    
+    return customerName.includes(query) || productTitle.includes(query);
+  });
   
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -53,6 +72,17 @@ export function RevenueModal({ isOpen, onClose, purchases }: RevenueModalProps) 
             Total Revenue: ${totalRevenue.toFixed(2)}
           </DialogDescription>
         </DialogHeader>
+        
+        <div className="relative my-4">
+          <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search by customer or product..."
+            className="pl-8"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
+        
         <div className="mt-4">
           <Table>
             <TableHeader>
@@ -65,12 +95,14 @@ export function RevenueModal({ isOpen, onClose, purchases }: RevenueModalProps) 
               </TableRow>
             </TableHeader>
             <TableBody>
-              {purchases.length === 0 ? (
+              {filteredPurchases.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center">No purchases found</TableCell>
+                  <TableCell colSpan={5} className="text-center">
+                    {searchQuery ? 'No purchases match your search' : 'No purchases found'}
+                  </TableCell>
                 </TableRow>
               ) : (
-                purchases.map((purchase) => (
+                filteredPurchases.map((purchase) => (
                   <TableRow key={purchase.id}>
                     <TableCell>
                       {purchase.user?.full_name || 

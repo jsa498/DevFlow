@@ -1,18 +1,19 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { useSupabaseAuth } from '@/components/providers/supabase-auth-provider';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
-import { StatsCards } from '@/components/admin/stats-cards';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { RecentPurchases } from '@/components/admin/recent-purchases';
+import { StatsCards } from '@/components/admin/stats-cards';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { Users, Calendar } from 'lucide-react';
 
 export default function AdminDashboardPage() {
   const router = useRouter();
-  const { user, isLoading } = useSupabaseAuth();
+  const { user, isLoading: authLoading } = useSupabaseAuth();
   const [users, setUsers] = useState<any[]>([]);
   const [purchases, setPurchases] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -21,7 +22,7 @@ export default function AdminDashboardPage() {
   const isAdmin = user?.app_metadata?.role === 'admin';
   
   useEffect(() => {
-    if (!isLoading && !isAdmin) {
+    if (!authLoading && !isAdmin) {
       router.push('/dashboard');
       return;
     }
@@ -29,7 +30,7 @@ export default function AdminDashboardPage() {
     if (user && isAdmin) {
       fetchData();
     }
-  }, [user, isLoading, isAdmin, router]);
+  }, [user, authLoading, isAdmin, router]);
   
   const fetchData = async () => {
     try {
@@ -101,7 +102,8 @@ export default function AdminDashboardPage() {
     }
   };
   
-  if (isLoading || loading) {
+  // Show loading state
+  if (loading || authLoading) {
     return (
       <div className="container py-8 flex justify-center items-center min-h-[60vh]">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
@@ -130,7 +132,21 @@ export default function AdminDashboardPage() {
   
   return (
     <div className="container py-8 space-y-8">
-      <h1 className="text-3xl font-bold">Admin Dashboard</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-3xl font-bold">Admin Dashboard</h1>
+        <div className="flex gap-3">
+          <Button asChild variant="outline" size="sm">
+            <Link href="/dashboard/admin/coaching">
+              <Users className="h-4 w-4 mr-2" /> Coaching Management
+            </Link>
+          </Button>
+          <Button asChild variant="outline" size="sm">
+            <Link href="/dashboard/admin/coaching/calendar">
+              <Calendar className="h-4 w-4 mr-2" /> Calendar View
+            </Link>
+          </Button>
+        </div>
+      </div>
       
       <StatsCards
         totalUsers={totalUsers}
@@ -140,7 +156,9 @@ export default function AdminDashboardPage() {
         purchases={purchases}
       />
       
-      <RecentPurchases purchases={purchases.slice(0, 10)} />
+      <div className="mt-8">
+        <RecentPurchases purchases={purchases.slice(0, 10)} />
+      </div>
     </div>
   );
 } 

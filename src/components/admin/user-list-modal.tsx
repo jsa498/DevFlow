@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -15,6 +16,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Input } from "@/components/ui/input";
+import { Search } from "lucide-react";
 import { formatDistanceToNow } from 'date-fns';
 
 interface User {
@@ -34,6 +37,17 @@ interface UserListModalProps {
 }
 
 export function UserListModal({ isOpen, onClose, users }: UserListModalProps) {
+  const [searchQuery, setSearchQuery] = useState('');
+  
+  // Filter users based on search query
+  const filteredUsers = users.filter(user => {
+    const name = (user.full_name || user.user_metadata?.full_name || '').toLowerCase();
+    const email = (user.email || '').toLowerCase();
+    const query = searchQuery.toLowerCase();
+    
+    return name.includes(query) || email.includes(query);
+  });
+  
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
@@ -43,6 +57,17 @@ export function UserListModal({ isOpen, onClose, users }: UserListModalProps) {
             All registered users on the platform
           </DialogDescription>
         </DialogHeader>
+        
+        <div className="relative my-4">
+          <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search users by name or email..."
+            className="pl-8"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
+        
         <div className="mt-4">
           <Table>
             <TableHeader>
@@ -53,12 +78,14 @@ export function UserListModal({ isOpen, onClose, users }: UserListModalProps) {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {users.length === 0 ? (
+              {filteredUsers.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={3} className="text-center">No users found</TableCell>
+                  <TableCell colSpan={3} className="text-center">
+                    {searchQuery ? 'No users match your search' : 'No users found'}
+                  </TableCell>
                 </TableRow>
               ) : (
-                users.map((user) => (
+                filteredUsers.map((user) => (
                   <TableRow key={user.id}>
                     <TableCell>
                       {user.full_name || user.user_metadata?.full_name || 'Anonymous'}

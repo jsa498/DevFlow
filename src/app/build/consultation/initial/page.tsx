@@ -4,29 +4,17 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useSupabaseAuth } from '@/components/providers/supabase-auth-provider';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, Calendar, Clock, Loader2, Info } from 'lucide-react';
+import { ArrowLeft, Calendar, Clock, Loader2, Info, Check } from 'lucide-react';
 import { toast } from 'sonner';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
+import { INITIAL_CONSULTATION_PRICE } from '@/lib/pricing-tiers';
 
-type CoachingService = {
-  id: string;
-  title: string;
-  description: string;
-  initial_consultation_price: number;
-  image_url: string | null;
-  published: boolean;
-  created_at: string;
-  updated_at: string;
-};
-
-export default function ConsultationBookingPage({ params }: { params: { id: string } }) {
+export default function ConsultationBookingPage() {
   const router = useRouter();
   const { user, isLoading: authLoading } = useSupabaseAuth();
-  const [service, setService] = useState<CoachingService | null>(null);
   const [loading, setLoading] = useState(true);
   const [bookingDate, setBookingDate] = useState<string>('');
   const [bookingTime, setBookingTime] = useState<string>('');
@@ -34,51 +22,33 @@ export default function ConsultationBookingPage({ params }: { params: { id: stri
   const [preferredDays, setPreferredDays] = useState<string[]>([]);
   
   useEffect(() => {
-    const fetchServiceDetails = async () => {
-      try {
-        setLoading(true);
-        const supabase = createClientComponentClient();
-        
-        // Fetch coaching service details
-        const { data, error } = await supabase
-          .from('coaching_services')
-          .select('*')
-          .eq('id', params.id)
-          .eq('published', true)
-          .single();
-          
-        if (error) {
-          console.error('Error fetching coaching service:', error);
-          toast.error('Service not found');
-          router.push('/build');
-          return;
-        }
-        
-        setService(data);
-      } catch (error) {
-        console.error('Error in fetchServiceDetails:', error);
-        toast.error('Failed to load service details');
-      } finally {
-        setLoading(false);
-      }
-    };
+    // Simulate loading for a smoother experience
+    const timer = setTimeout(() => {
+      setLoading(false);
+    }, 500);
     
-    if (params.id) {
-      fetchServiceDetails();
-    }
-  }, [params.id, router]);
+    return () => clearTimeout(timer);
+  }, []);
   
   // Redirect to sign in if not authenticated
   useEffect(() => {
     if (!authLoading && !user) {
-      router.push(`/signin?callbackUrl=/build/consultation/${params.id}`);
+      router.push(`/signin?callbackUrl=/build/consultation/initial`);
     }
-  }, [user, authLoading, router, params.id]);
+  }, [user, authLoading, router]);
+  
+  const handlePreferredDayToggle = (day: string) => {
+    setPreferredDays(current => 
+      current.includes(day)
+        ? current.filter(d => d !== day)
+        : [...current, day]
+    );
+  };
   
   const handleBookConsultation = async () => {
     if (!user) {
       toast.error('You must be signed in to book a consultation');
-      router.push(`/signin?callbackUrl=/build/consultation/${params.id}`);
+      router.push(`/signin?callbackUrl=/build/consultation/initial`);
       return;
     }
     
@@ -112,7 +82,8 @@ export default function ConsultationBookingPage({ params }: { params: { id: stri
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          serviceId: service?.id,
+          price: INITIAL_CONSULTATION_PRICE,
+          title: 'Initial Consultation',
           scheduledAt: scheduledAt.toISOString(),
           isConsultation: true,
           preferredDays: preferredDays,
@@ -135,39 +106,11 @@ export default function ConsultationBookingPage({ params }: { params: { id: stri
     }
   };
   
-  const handlePreferredDayToggle = (day: string) => {
-    setPreferredDays(current => 
-      current.includes(day)
-        ? current.filter(d => d !== day)
-        : [...current, day]
-    );
-  };
-  
   // Show loading state
   if (loading || authLoading) {
     return (
       <div className="container py-8 flex justify-center items-center min-h-[60vh]">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
-      </div>
-    );
-  }
-  
-  if (!service) {
-    return (
-      <div className="container py-8">
-        <Card>
-          <CardHeader>
-            <CardTitle>Service Not Found</CardTitle>
-            <CardDescription>
-              The coaching service you're looking for doesn't exist or has been removed.
-            </CardDescription>
-          </CardHeader>
-          <CardFooter>
-            <Button asChild>
-              <Link href="/build">Back to Coaching Services</Link>
-            </Button>
-          </CardFooter>
-        </Card>
       </div>
     );
   }
@@ -253,7 +196,7 @@ export default function ConsultationBookingPage({ params }: { params: { id: stri
                 <span>One-time session</span>
               </div>
               
-              <div className="text-2xl font-bold mb-4">${service.initial_consultation_price.toFixed(2)}</div>
+              <div className="text-2xl font-bold mb-4">${INITIAL_CONSULTATION_PRICE.toFixed(2)}</div>
             </div>
             
             <div className="md:w-1/2 space-y-4">
