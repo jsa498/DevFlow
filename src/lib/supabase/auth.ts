@@ -23,10 +23,17 @@ export async function signUpWithEmail(email: string, password: string) {
 
 // Sign in with OAuth provider (Google, etc.)
 export async function signInWithOAuth(provider: Provider) {
+  // Get the current URL origin (works for both localhost and production)
+  const redirectUrl = typeof window !== 'undefined' 
+    ? `${window.location.origin}/auth/callback` 
+    : process.env.NEXT_PUBLIC_SITE_URL 
+      ? `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`
+      : 'https://www.devflow.ca/auth/callback';
+      
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider,
     options: {
-      redirectTo: `${window.location.origin}/auth/callback`,
+      redirectTo: redirectUrl,
     },
   });
   
