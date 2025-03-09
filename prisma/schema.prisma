@@ -11,6 +11,9 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+  // If DATABASE_URL is not available, try to use Supabase direct connection
+  // For Supabase, you'll need to set DATABASE_URL in your environment variables
+  // Format: postgresql://postgres:[PASSWORD]@[HOST]:[PORT]/postgres
 }
 
 // User model for authentication and profile information
