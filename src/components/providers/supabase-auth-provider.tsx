@@ -99,47 +99,20 @@ export default function SupabaseAuthProvider({ children }: { children: React.Rea
   };
 
   const signInWithEmail = async (email: string, password: string) => {
-    // Get the current URL to redirect back to after authentication
-    const currentPath = window.location.pathname;
-    const callbackUrl = new URL('/auth/callback', window.location.origin);
-    
-    // If we're on the signin page, check for a callbackUrl parameter
-    const searchParams = new URLSearchParams(window.location.search);
-    const redirectPath = searchParams.get('callbackUrl') || currentPath;
-    
-    // Add the redirectPath as a query parameter to the callback URL
-    callbackUrl.searchParams.set('callbackUrl', redirectPath);
-    
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
     
-    // After successful sign-in, manually redirect to the callback URL
-    if (!error) {
-      window.location.href = callbackUrl.toString();
-    }
-    
     return { error };
   };
 
   const signUpWithEmail = async (email: string, password: string) => {
-    // Get the current URL to redirect back to after authentication
-    const currentPath = window.location.pathname;
-    const callbackUrl = new URL('/auth/callback', window.location.origin);
-    
-    // If we're on the signup page, check for a callbackUrl parameter
-    const searchParams = new URLSearchParams(window.location.search);
-    const redirectPath = searchParams.get('callbackUrl') || currentPath;
-    
-    // Add the redirectPath as a query parameter to the callback URL
-    callbackUrl.searchParams.set('callbackUrl', redirectPath);
-    
     const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        emailRedirectTo: callbackUrl.toString(),
+        emailRedirectTo: `${window.location.origin}/auth/callback`,
       },
     });
     

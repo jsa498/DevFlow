@@ -52,11 +52,13 @@ export default function SigninPage() {
         throw new Error(error.message || 'Sign in failed');
       }
 
-      // The redirect is now handled by the auth provider
-      // No need to manually redirect here
+      // Redirect to the callback URL or homepage
+      router.push(callbackUrl !== '/signin' ? callbackUrl : '/');
+      router.refresh();
     } catch (error) {
       console.error('Sign in error:', error);
       setSignInError(error instanceof Error ? error.message : 'Invalid email or password');
+    } finally {
       setIsSubmitting(false);
     }
   }
