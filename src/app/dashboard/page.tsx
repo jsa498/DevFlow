@@ -36,7 +36,7 @@ export default function Dashboard() {
                 title,
                 description,
                 price,
-                imageUrl,
+                image_url,
                 pdfUrl
               )
             `)
@@ -114,12 +114,6 @@ export default function Dashboard() {
           
           {isAdmin && (
             <div className="flex space-x-3">
-              <Button asChild variant="default" className="h-10">
-                <Link href="/dashboard/admin/courses/create">Create Course</Link>
-              </Button>
-              <Button asChild variant="default" className="h-10">
-                <Link href="/dashboard/admin/coaching">Manage Coaching</Link>
-              </Button>
               <Button asChild variant="outline" className="h-10">
                 <Link href="/dashboard/admin">Admin Dashboard</Link>
               </Button>
@@ -218,10 +212,10 @@ export default function Dashboard() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {purchases.map((purchase) => (
             <Card key={purchase.id} className="group overflow-hidden border border-border/40 hover:border-primary/20 transition-all hover:shadow-lg hover:shadow-primary/5">
-              {purchase.product.imageUrl && (
+              {purchase.product.image_url && (
                 <div className="relative h-48 w-full overflow-hidden">
                   <img 
-                    src={purchase.product.imageUrl} 
+                    src={purchase.product.image_url} 
                     alt={purchase.product.title} 
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />

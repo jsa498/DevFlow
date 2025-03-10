@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import { ShoppingCart, Trash2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import Image from 'next/image';
 import { useSupabaseAuth } from '@/components/providers/supabase-auth-provider';
 import { Button } from '@/components/ui/button';
 import {
@@ -103,12 +102,11 @@ export default function CartModal() {
                   {items.map((item) => (
                     <div key={item.id} className="flex items-center gap-4 py-4">
                       <div className="flex-shrink-0 h-16 w-16 relative bg-muted rounded-lg overflow-hidden">
-                        {item.imageUrl ? (
-                          <Image
-                            src={item.imageUrl}
-                            alt={item.title}
-                            fill
-                            className="object-cover"
+                        {item.image_url ? (
+                          <img 
+                            src={item.image_url} 
+                            alt={item.title} 
+                            className="h-full w-full object-cover"
                           />
                         ) : (
                           <div className="h-full w-full flex items-center justify-center">

@@ -126,9 +126,9 @@ function CheckoutContent() {
                   {items.map((item) => (
                     <div key={item.id} className="flex items-center p-4 gap-4">
                       <div className="h-16 w-16 relative bg-muted rounded flex-shrink-0 overflow-hidden">
-                        {item.imageUrl ? (
+                        {item.image_url ? (
                           <Image
-                            src={item.imageUrl}
+                            src={item.image_url}
                             alt={item.title}
                             fill
                             className="object-cover"

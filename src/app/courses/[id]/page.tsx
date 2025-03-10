@@ -121,7 +121,7 @@ export default function CoursePage({ params }: { params: { id: string } }) {
       id: product.id,
       title: product.title,
       price: product.price,
-      imageUrl: product.imageUrl,
+      image_url: product.image_url,
     }, user?.id);
     
     toast.success('Added to cart');
@@ -180,9 +180,9 @@ export default function CoursePage({ params }: { params: { id: string } }) {
           <div className="flex flex-col md:flex-row gap-8 max-w-6xl mx-auto">
             {/* Product image */}
             <div className="w-full md:w-1/2 flex-shrink-0">
-              {product.imageUrl ? (
+              {product.image_url ? (
                 <img 
-                  src={product.imageUrl} 
+                  src={product.image_url} 
                   alt={product.title} 
                   className="w-full h-auto object-cover rounded-2xl border border-border shadow-xl"
                 />

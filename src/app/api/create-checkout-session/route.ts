@@ -98,7 +98,7 @@ export async function POST(req: Request) {
         product_data: {
           name: product.title,
           description: product.description,
-          images: product.imageUrl ? [product.imageUrl] : [],
+          images: product.image_url ? [product.image_url] : [],
         },
         unit_amount: Math.round(product.price * 100), // Convert to cents
       },

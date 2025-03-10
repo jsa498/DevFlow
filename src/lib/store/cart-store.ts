@@ -7,7 +7,7 @@ export interface LocalCartItem {
   id: string;
   title: string;
   price: number;
-  imageUrl?: string | null;
+  image_url?: string | null;
 }
 
 interface CartStore {
@@ -47,7 +47,7 @@ export const useCartStore = create<CartStore>()(
                 product_id: item.id,
                 title: item.title,
                 price: item.price,
-                image_url: item.imageUrl
+                image_url: item.image_url
               };
               
               await supabase.from('cart_items').insert(cartItem);
@@ -127,7 +127,7 @@ export const useCartStore = create<CartStore>()(
             id: item.product_id,
             title: item.title,
             price: item.price,
-            imageUrl: item.image_url
+            image_url: item.image_url
           }));
 
           // Update local state
@@ -164,7 +164,7 @@ export const useCartStore = create<CartStore>()(
                     id: item.product_id,
                     title: item.title,
                     price: item.price,
-                    imageUrl: item.image_url
+                    image_url: item.image_url
                   }));
                   
                   console.log('Updating local cart state:', localUpdatedItems);

@@ -3,166 +3,7 @@
 import { createClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
 import { createServerComponentClient } from '@supabase/auth-helpers-nextjs';
-
-// Import course templates from a separate file
 import { COURSE_TEMPLATES } from '@/lib/course-templates';
-
-type CoachingServiceInput = {
-  description: string;
-  initial_consultation_price: number;
-  published: boolean;
-  title?: string;
-  image_url?: string | null;
-};
-
-export async function createCoachingService(data: CoachingServiceInput) {
-  try {
-    // First, verify the user is an admin
-    const cookieStore = cookies();
-    const supabase = createServerComponentClient({ cookies: () => cookieStore });
-    
-    const { data: { session } } = await supabase.auth.getSession();
-    
-    if (!session) {
-      return { success: false, error: 'Not authenticated' };
-    }
-    
-    const user = session.user;
-    console.log('Server action - User:', user);
-    console.log('Server action - App metadata:', user.app_metadata);
-    
-    const isAdmin = user.app_metadata?.role === 'admin';
-    console.log('Server action - Is admin?', isAdmin);
-    
-    // Temporarily bypass the admin check for testing
-    // if (!isAdmin) {
-    //   // Also check in the profiles table as a fallback
-    //   const { data: profile } = await supabase
-    //     .from('profiles')
-    //     .select('role')
-    //     .eq('id', user.id)
-    //     .single();
-
-    //   console.log('Server action - Profile:', profile);
-
-    //   if (!profile || profile.role !== 'ADMIN') {
-    //     return { success: false, error: 'Not authorized - admin role required' };
-    //   }
-    // }
-    
-    // Create a Supabase client with the service role key
-    const supabaseAdmin = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!,
-      {
-        auth: {
-          autoRefreshToken: false,
-          persistSession: false,
-        },
-      }
-    );
-    
-    console.log('Server action - Creating coaching service with admin client');
-    
-    // Create the coaching service using the admin client
-    const { data: service, error } = await supabaseAdmin
-      .from('coaching_services')
-      .insert({
-        title: "One-on-One Coaching",
-        description: data.description,
-        initial_consultation_price: data.initial_consultation_price,
-        image_url: null,
-        published: data.published,
-      })
-      .select()
-      .single();
-      
-    if (error) {
-      console.error('Server action - Error creating coaching service:', error);
-      return { success: false, error: error.message };
-    }
-    
-    console.log('Server action - Service created successfully:', service);
-    return { success: true, data: service };
-  } catch (error) {
-    console.error('Error in createCoachingService action:', error);
-    return { success: false, error: String(error) };
-  }
-}
-
-// Add a new type for subscription plan input
-type SubscriptionPlanInput = {
-  service_id: string;
-  title: string;
-  description: string;
-  price_per_month: number;
-  sessions_per_month: number;
-};
-
-// Add a new server action for creating subscription plans
-export async function createSubscriptionPlan(data: SubscriptionPlanInput) {
-  try {
-    // First, verify the user is an admin
-    const cookieStore = cookies();
-    const supabase = createServerComponentClient({ cookies: () => cookieStore });
-    
-    const { data: { session } } = await supabase.auth.getSession();
-    
-    if (!session) {
-      return { success: false, error: 'Not authenticated' };
-    }
-    
-    const user = session.user;
-    console.log('Server action - User:', user);
-    console.log('Server action - App metadata:', user.app_metadata);
-    
-    const isAdmin = user.app_metadata?.role === 'admin';
-    console.log('Server action - Is admin?', isAdmin);
-    
-    // Temporarily bypass the admin check for testing
-    // if (!isAdmin) {
-    //   return { success: false, error: 'Not authorized - admin role required' };
-    // }
-    
-    // Create a Supabase client with the service role key
-    const supabaseAdmin = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!,
-      {
-        auth: {
-          autoRefreshToken: false,
-          persistSession: false,
-        },
-      }
-    );
-    
-    console.log('Server action - Creating subscription plan with admin client');
-    
-    // Create the subscription plan using the admin client
-    const { data: plan, error } = await supabaseAdmin
-      .from('coaching_subscription_plans')
-      .insert({
-        service_id: data.service_id,
-        title: data.title,
-        description: data.description,
-        price_per_month: data.price_per_month,
-        sessions_per_month: data.sessions_per_month,
-      })
-      .select()
-      .single();
-      
-    if (error) {
-      console.error('Server action - Error creating subscription plan:', error);
-      return { success: false, error: error.message };
-    }
-    
-    console.log('Server action - Subscription plan created successfully:', plan);
-    return { success: true, data: plan };
-  } catch (error) {
-    console.error('Error in createSubscriptionPlan action:', error);
-    return { success: false, error: String(error) };
-  }
-}
 
 // Function to automatically create a course
 export async function createAutomaticCourse(templateKey: string) {
@@ -340,4 +181,101 @@ export async function getAvailableCourseTemplates() {
   }));
   
   return { success: true, data: templates };
+}
+
+// Function to delete a course and its associated product
+export async function deleteCourse(courseId: string, productId: string) {
+  try {
+    // First, verify the user is an admin
+    const cookieStore = cookies();
+    const supabase = createServerComponentClient({ cookies: () => cookieStore });
+    
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    if (!session) {
+      return { success: false, error: 'Not authenticated' };
+    }
+    
+    const user = session.user;
+    const isAdmin = user.app_metadata?.role === 'admin';
+    
+    if (!isAdmin) {
+      return { success: false, error: 'Not authorized - admin role required' };
+    }
+    
+    // Create a Supabase client with the service role key
+    const supabaseAdmin = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+      {
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false,
+        },
+      }
+    );
+    
+    // First, delete all lessons associated with this course's sections
+    // Get all sections for this course
+    const { data: sections, error: sectionsError } = await supabaseAdmin
+      .from('sections')
+      .select('id')
+      .eq('course_id', courseId);
+      
+    if (sectionsError) {
+      console.error('Error fetching sections:', sectionsError);
+      return { success: false, error: 'Failed to delete course: Could not fetch sections' };
+    }
+    
+    // Delete lessons for each section
+    for (const section of sections || []) {
+      const { error: lessonsError } = await supabaseAdmin
+        .from('lessons')
+        .delete()
+        .eq('section_id', section.id);
+        
+      if (lessonsError) {
+        console.error(`Error deleting lessons for section ${section.id}:`, lessonsError);
+        return { success: false, error: `Failed to delete lessons for section ${section.id}` };
+      }
+    }
+    
+    // Delete sections
+    const { error: deleteSectionsError } = await supabaseAdmin
+      .from('sections')
+      .delete()
+      .eq('course_id', courseId);
+      
+    if (deleteSectionsError) {
+      console.error('Error deleting sections:', deleteSectionsError);
+      return { success: false, error: 'Failed to delete sections' };
+    }
+    
+    // Delete the course
+    const { error: deleteCourseError } = await supabaseAdmin
+      .from('courses')
+      .delete()
+      .eq('id', courseId);
+      
+    if (deleteCourseError) {
+      console.error('Error deleting course:', deleteCourseError);
+      return { success: false, error: 'Failed to delete course' };
+    }
+    
+    // Delete the product
+    const { error: deleteProductError } = await supabaseAdmin
+      .from('products')
+      .delete()
+      .eq('id', productId);
+      
+    if (deleteProductError) {
+      console.error('Error deleting product:', deleteProductError);
+      return { success: false, error: 'Failed to delete product associated with course' };
+    }
+    
+    return { success: true };
+  } catch (error) {
+    console.error('Error in deleteCourse action:', error);
+    return { success: false, error: String(error) };
+  }
 } 

@@ -9,7 +9,7 @@ import { RecentPurchases } from '@/components/admin/recent-purchases';
 import { StatsCards } from '@/components/admin/stats-cards';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Users, Calendar } from 'lucide-react';
+import { Users, Calendar, BookOpen } from 'lucide-react';
 
 export default function AdminDashboardPage() {
   const router = useRouter();
@@ -135,6 +135,11 @@ export default function AdminDashboardPage() {
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">Admin Dashboard</h1>
         <div className="flex gap-3">
+          <Button asChild variant="outline" size="sm">
+            <Link href="/dashboard/admin/courses">
+              <BookOpen className="h-4 w-4 mr-2" /> Course Management
+            </Link>
+          </Button>
           <Button asChild variant="outline" size="sm">
             <Link href="/dashboard/admin/coaching">
               <Users className="h-4 w-4 mr-2" /> Coaching Management

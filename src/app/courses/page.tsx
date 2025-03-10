@@ -65,9 +65,9 @@ export default async function CoursesPage() {
                 className="group relative bg-card hover:bg-card/90 rounded-2xl overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-primary/5 hover:-translate-y-1"
               >
                 <div className="relative h-64 w-full overflow-hidden">
-                  {product.imageUrl ? (
+                  {product.image_url ? (
                     <img 
-                      src={product.imageUrl} 
+                      src={product.image_url} 
                       alt={product.title} 
                       className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                     />

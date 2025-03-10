@@ -5,18 +5,18 @@ import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import { Carousel } from '@/components/ui/carousel';
 
-// Using local Product interface that matches the actual structure in the application
+// Update the Product interface to match the actual structure from Supabase
 interface Product {
   id: string;
   title: string;
   description: string;
   price: number;
-  imageUrl: string | null;
-  pdfUrl: string;
+  image_url: string | null; // Changed from imageUrl to match Supabase column name
+  pdf_url: string; // Changed from pdfUrl to match Supabase column name
   featured: boolean;
   published: boolean;
-  createdAt: Date;
-  updatedAt: Date;
+  created_at: string; // Changed from createdAt to match Supabase column name
+  updated_at: string; // Changed from updatedAt to match Supabase column name
 }
 
 export default function CourseCarousel({ title, description, products }: { 
@@ -67,9 +67,9 @@ export default function CourseCarousel({ title, description, products }: {
                   className="group relative bg-card hover:bg-card/80 rounded-2xl overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-primary/5 hover:-translate-y-1 flex-shrink-0 w-80"
                 >
                   <div className="relative h-52 w-full overflow-hidden">
-                    {product.imageUrl ? (
+                    {product.image_url ? (
                       <img 
-                        src={product.imageUrl} 
+                        src={product.image_url} 
                         alt={product.title} 
                         className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
                       />
@@ -134,9 +134,9 @@ export default function CourseCarousel({ title, description, products }: {
           {products.map((product) => (
             <div key={product.id} className="group relative bg-card hover:bg-card/80 rounded-2xl overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-primary/5 hover:-translate-y-1 h-full">
               <div className="relative h-52 w-full overflow-hidden">
-                {product.imageUrl ? (
+                {product.image_url ? (
                   <img 
-                    src={product.imageUrl} 
+                    src={product.image_url} 
                     alt={product.title} 
                     className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
                   />

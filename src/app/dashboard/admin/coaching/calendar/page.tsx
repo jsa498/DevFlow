@@ -214,13 +214,13 @@ export default function CoachingCalendarPage() {
           <div className="flex items-center justify-between">
             <CardTitle>{formatDate(currentDate)}</CardTitle>
             <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" onClick={goToPreviousMonth}>
+              <Button variant="outline" size="sm" onClick={goToPreviousMonth} className="text-foreground">
                 <ChevronLeft className="h-4 w-4" />
               </Button>
-              <Button variant="outline" size="sm" onClick={goToToday}>
+              <Button variant="outline" size="sm" onClick={goToToday} className="text-foreground">
                 Today
               </Button>
-              <Button variant="outline" size="sm" onClick={goToNextMonth}>
+              <Button variant="outline" size="sm" onClick={goToNextMonth} className="text-foreground">
                 <ChevronRight className="h-4 w-4" />
               </Button>
             </div>
