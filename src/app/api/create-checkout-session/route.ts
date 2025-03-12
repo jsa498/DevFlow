@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
+import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
 
 export async function POST(req: Request) {
   try {
@@ -8,35 +9,23 @@ export async function POST(req: Request) {
     const { default: Stripe } = await import('stripe');
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '');
     
-    // Create Supabase client
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        auth: {
-          persistSession: false
-        }
-      }
-    );
+    // Create Supabase client using auth helpers
+    const cookieStore = cookies();
+    const supabase = createRouteHandlerClient({ cookies: () => cookieStore });
     
-    // Get the current session from cookies
-    const cookieHeader = req.headers.get('cookie') || '';
-    const accessToken = cookieHeader
-      .split(';')
-      .find(c => c.trim().startsWith('sb-access-token='))
-      ?.split('=')[1];
-      
-    if (!accessToken) {
+    // Get the current session
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+    
+    if (sessionError || !session) {
       return NextResponse.json(
         { error: 'You must be logged in to purchase products' },
         { status: 401 }
       );
     }
     
-    // Get the current user
-    const { data: { user }, error: userError } = await supabase.auth.getUser(accessToken);
+    const user = session.user;
     
-    if (userError || !user) {
+    if (!user) {
       return NextResponse.json(
         { error: 'You must be logged in to purchase products' },
         { status: 401 }

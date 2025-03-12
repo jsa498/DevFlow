@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import React from 'react';
 import { useRouter } from 'next/navigation';
 import { useSupabaseAuth } from '@/components/providers/supabase-auth-provider';
 import { loadStripe } from '@stripe/stripe-js';
@@ -32,7 +33,11 @@ async function checkPurchaseStatus(id: string) {
   return res.json();
 }
 
-export default function CoursePage({ params }: { params: { id: string } }) {
+export default function CoursePage({ params }: { params: Promise<{ id: string }> }) {
+  // Unwrap params if it's a Promise
+  const unwrappedParams = React.use(params);
+  const courseId = unwrappedParams.id;
+  
   const [product, setProduct] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [purchased, setPurchased] = useState(false);
@@ -51,12 +56,12 @@ export default function CoursePage({ params }: { params: { id: string } }) {
     async function loadProduct() {
       try {
         setLoading(true);
-        const productData = await getProduct(params.id);
+        const productData = await getProduct(courseId);
         setProduct(productData);
         
         // Check if user has purchased this product
         if (user) {
-          const purchaseStatus = await checkPurchaseStatus(params.id);
+          const purchaseStatus = await checkPurchaseStatus(courseId);
           setPurchased(purchaseStatus.purchased);
         }
       } catch (err) {
@@ -68,23 +73,35 @@ export default function CoursePage({ params }: { params: { id: string } }) {
     }
     
     loadProduct();
-  }, [params.id, user]);
+  }, [courseId, user]);
 
   const handleCheckout = async () => {
     if (!user) {
-      router.push(`/signin?callbackUrl=/courses/${params.id}`);
+      router.push(`/signin?callbackUrl=/courses/${courseId}`);
       return;
     }
     
     try {
       setCheckoutLoading(true);
+      
+      // Add the item to the cart first, so if the user returns without completing checkout,
+      // the item will still be in their cart
+      if (product && !isItemInCart(product.id)) {
+        addItem({
+          id: product.id,
+          title: product.title,
+          price: product.price,
+          image_url: product.image_url,
+        }, user?.id);
+      }
+      
       const response = await fetch('/api/create-checkout-session', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          items: [{ id: params.id }],
+          items: [{ id: courseId }],
         }),
       });
       
