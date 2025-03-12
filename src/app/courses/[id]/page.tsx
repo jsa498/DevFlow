@@ -63,6 +63,9 @@ export default function CoursePage({ params }: { params: Promise<{ id: string }>
         if (user) {
           const purchaseStatus = await checkPurchaseStatus(courseId);
           setPurchased(purchaseStatus.purchased);
+          
+          // Log purchase status for debugging
+          console.log(`Purchase status for course ${courseId}:`, purchaseStatus.purchased);
         }
       } catch (err) {
         setError("Failed to load course. Please try again later.");
@@ -78,6 +81,14 @@ export default function CoursePage({ params }: { params: Promise<{ id: string }>
   const handleCheckout = async () => {
     if (!user) {
       router.push(`/signin?callbackUrl=/courses/${courseId}`);
+      return;
+    }
+    
+    // Check if already purchased before proceeding
+    const purchaseStatus = await checkPurchaseStatus(courseId);
+    if (purchaseStatus.purchased) {
+      toast.info("You've already purchased this course");
+      router.push('/dashboard');
       return;
     }
     
@@ -131,8 +142,18 @@ export default function CoursePage({ params }: { params: Promise<{ id: string }>
     }
   };
   
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
     if (!product) return;
+    
+    // Check if already purchased before adding to cart
+    if (user) {
+      const purchaseStatus = await checkPurchaseStatus(courseId);
+      if (purchaseStatus.purchased) {
+        toast.info("You've already purchased this course");
+        router.push('/dashboard');
+        return;
+      }
+    }
     
     addItem({
       id: product.id,

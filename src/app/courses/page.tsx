@@ -1,24 +1,68 @@
-import Link from 'next/link';
-import { createClient } from '@supabase/supabase-js';
-import { ArrowRight } from 'lucide-react';
+'use client';
 
-export default async function CoursesPage() {
-  // Create Supabase client
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
+import { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { ArrowRight, Check } from 'lucide-react';
+import { useSupabaseAuth } from '@/components/providers/supabase-auth-provider';
+import { Badge } from '@/components/ui/badge';
+
+export default function CoursesPage() {
+  const [products, setProducts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [purchasedProductIds, setPurchasedProductIds] = useState<string[]>([]);
+  const { user } = useSupabaseAuth();
   
-  // Get all published products
-  const { data: products, error } = await supabase
-    .from('products')
-    .select('*')
-    .eq('published', true)
-    .order('created_at', { ascending: false });
+  useEffect(() => {
+    async function fetchProducts() {
+      try {
+        const supabase = createClientComponentClient();
+        
+        // Get all published products
+        const { data, error } = await supabase
+          .from('products')
+          .select('*')
+          .eq('published', true)
+          .order('created_at', { ascending: false });
+          
+        if (error) {
+          console.error('Error fetching products:', error);
+        } else {
+          setProducts(data || []);
+        }
+      } catch (error) {
+        console.error('Error fetching products:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
     
-  if (error) {
-    console.error('Error fetching products:', error);
-  }
+    async function fetchUserPurchases() {
+      if (!user) return;
+      
+      try {
+        const supabase = createClientComponentClient();
+        
+        // Get user's completed purchases
+        const { data, error } = await supabase
+          .from('purchases')
+          .select('product_id')
+          .eq('user_id', user.id)
+          .eq('status', 'completed');
+          
+        if (error) {
+          console.error('Error fetching user purchases:', error);
+        } else {
+          setPurchasedProductIds((data || []).map(p => p.product_id));
+        }
+      } catch (error) {
+        console.error('Error fetching user purchases:', error);
+      }
+    }
+    
+    fetchProducts();
+    fetchUserPurchases();
+  }, [user]);
 
   return (
     <main className="bg-background min-h-screen pb-16">
@@ -46,7 +90,11 @@ export default async function CoursesPage() {
       
       {/* Products grid */}
       <div className="container mx-auto px-4 mt-4">
-        {!products || products.length === 0 ? (
+        {loading ? (
+          <div className="flex justify-center items-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+          </div>
+        ) : !products || products.length === 0 ? (
           <div className="bg-card rounded-2xl p-12 text-center shadow-lg">
             <h3 className="text-2xl font-semibold mb-4">No Courses Available</h3>
             <p className="text-muted-foreground mb-6">We're currently working on new courses. Please check back later.</p>
@@ -59,47 +107,61 @@ export default async function CoursesPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {products.map((product) => (
-              <div 
-                key={product.id} 
-                className="group relative bg-card hover:bg-card/90 rounded-2xl overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-primary/5 hover:-translate-y-1"
-              >
-                <div className="relative h-64 w-full overflow-hidden">
-                  {product.image_url ? (
-                    <img 
-                      src={product.image_url} 
-                      alt={product.title} 
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                    />
-                  ) : (
-                    <div className="w-full h-full bg-muted flex items-center justify-center group-hover:bg-muted/80 transition-colors">
-                      <svg className="w-16 h-16 text-muted-foreground/40" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                      </svg>
+            {products.map((product) => {
+              const isPurchased = purchasedProductIds.includes(product.id);
+              
+              return (
+                <div 
+                  key={product.id} 
+                  className="group relative bg-card hover:bg-card/90 rounded-2xl overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-primary/5 hover:-translate-y-1"
+                >
+                  {isPurchased && (
+                    <div className="absolute top-4 right-4 z-10">
+                      <Badge variant="secondary" className="flex items-center gap-1 bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100">
+                        <Check className="h-3 w-3" /> Purchased
+                      </Badge>
                     </div>
                   )}
-                </div>
-                <div className="p-6">
-                  <h2 className="text-xl font-bold mb-2 group-hover:text-primary transition-colors">
-                    <Link 
-                      href={`/courses/${product.id}`}
-                      className="hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                    >
-                      {product.title}
-                    </Link>
-                  </h2>
-                  <p className="text-muted-foreground text-sm mb-6 line-clamp-3">{product.description}</p>
-                  <div className="flex items-center justify-end">
-                    <Link 
-                      href={`/courses/${product.id}`}
-                      className="inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline"
-                    >
-                      View Details <ArrowRight className="h-4 w-4" />
-                    </Link>
+                  <div className="relative h-64 w-full overflow-hidden">
+                    {product.image_url ? (
+                      <img 
+                        src={product.image_url} 
+                        alt={product.title} 
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-muted flex items-center justify-center group-hover:bg-muted/80 transition-colors">
+                        <svg className="w-16 h-16 text-muted-foreground/40" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                      </div>
+                    )}
+                  </div>
+                  <div className="p-6">
+                    <div className="flex justify-between items-center mb-2">
+                      <h2 className="text-xl font-bold group-hover:text-primary transition-colors">
+                        <Link 
+                          href={`/courses/${product.id}`}
+                          className="hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                        >
+                          {product.title}
+                        </Link>
+                      </h2>
+                      <span className="text-sm font-medium text-primary">${product.price.toFixed(2)}</span>
+                    </div>
+                    <p className="text-muted-foreground text-sm mb-6 line-clamp-3">{product.description}</p>
+                    <div className="flex items-center justify-end">
+                      <Link 
+                        href={`/courses/${product.id}`}
+                        className="inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline"
+                      >
+                        {isPurchased ? 'View Course' : 'View Details'} <ArrowRight className="h-4 w-4" />
+                      </Link>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>

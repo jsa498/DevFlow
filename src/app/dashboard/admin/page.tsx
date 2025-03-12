@@ -10,6 +10,8 @@ import { StatsCards } from '@/components/admin/stats-cards';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Users, Calendar, BookOpen } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 
 export default function AdminDashboardPage() {
   const router = useRouter();
@@ -17,6 +19,7 @@ export default function AdminDashboardPage() {
   const [users, setUsers] = useState<any[]>([]);
   const [purchases, setPurchases] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [testMode, setTestMode] = useState(true);
   
   // Check if user is admin
   const isAdmin = user?.app_metadata?.role === 'admin';
@@ -30,7 +33,7 @@ export default function AdminDashboardPage() {
     if (user && isAdmin) {
       fetchData();
     }
-  }, [user, authLoading, isAdmin, router]);
+  }, [user, authLoading, isAdmin, router, testMode]);
   
   const fetchData = async () => {
     try {
@@ -80,18 +83,69 @@ export default function AdminDashboardPage() {
       }
       
       // Get all completed purchases
-      const { data: purchasesData, error: purchasesError } = await supabase
+      // First, try to get purchases with test_mode information
+      const { data: purchasesWithTestMode, error: testModeError } = await supabase
         .from('purchases')
-        .select('*')
+        .select(`
+          *,
+          stripe_session_id,
+          test_mode,
+          product:products (
+            id,
+            title,
+            price
+          ),
+          user:profiles (
+            email,
+            full_name
+          )
+        `)
         .eq('status', 'completed')
         .order('created_at', { ascending: false });
+      
+      if (testModeError) {
+        console.error('Error fetching purchases with test mode:', testModeError);
         
-      if (purchasesError) {
-        console.error('Error fetching purchases:', purchasesError);
-        setPurchases([]);
+        // Fallback to regular purchases query
+        const { data: purchasesData, error: purchasesError } = await supabase
+          .from('purchases')
+          .select(`
+            *,
+            product:products (
+              id,
+              title,
+              price
+            ),
+            user:profiles (
+              email,
+              full_name
+            )
+          `)
+          .eq('status', 'completed')
+          .order('created_at', { ascending: false });
+          
+        if (purchasesError) {
+          console.error('Error fetching purchases:', purchasesError);
+          setPurchases([]);
+        } else {
+          console.log('Purchases fetched:', purchasesData?.length);
+          setPurchases(purchasesData || []);
+        }
       } else {
-        console.log('Purchases fetched:', purchasesData?.length);
-        setPurchases(purchasesData || []);
+        console.log('Purchases with test mode fetched:', purchasesWithTestMode?.length);
+        
+        // Filter purchases based on test mode
+        const filteredPurchases = purchasesWithTestMode?.filter(purchase => {
+          // If test_mode field exists, use it
+          if (purchase.test_mode !== undefined && purchase.test_mode !== null) {
+            return testMode === purchase.test_mode;
+          }
+          
+          // Otherwise, assume it's a test purchase if we're in test mode (default behavior)
+          return testMode;
+        }) || [];
+        
+        setPurchases(filteredPurchases);
       }
     } catch (error) {
       console.error('Error fetching admin data:', error);
@@ -135,6 +189,17 @@ export default function AdminDashboardPage() {
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">Admin Dashboard</h1>
         <div className="flex gap-3">
+          <div className="flex items-center space-x-4 mr-4 bg-muted/50 px-4 py-2 rounded-lg">
+            <Label htmlFor="test-mode" className={testMode ? "text-amber-500 font-medium" : "text-green-500 font-medium"}>
+              {testMode ? "Test Mode" : "Live Mode"}
+            </Label>
+            <Switch
+              id="test-mode"
+              checked={testMode}
+              onCheckedChange={setTestMode}
+              className={testMode ? "data-[state=checked]:bg-amber-500" : "data-[state=unchecked]:bg-green-500"}
+            />
+          </div>
           <Button asChild variant="outline" size="sm">
             <Link href="/dashboard/admin/courses">
               <BookOpen className="h-4 w-4 mr-2" /> Course Management
@@ -159,10 +224,11 @@ export default function AdminDashboardPage() {
         totalPurchases={totalPurchases}
         users={users}
         purchases={purchases}
+        testMode={testMode}
       />
       
       <div className="mt-8">
-        <RecentPurchases purchases={purchases.slice(0, 10)} />
+        <RecentPurchases purchases={purchases.slice(0, 10)} testMode={testMode} />
       </div>
     </div>
   );

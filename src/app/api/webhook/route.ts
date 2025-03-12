@@ -1,199 +1,152 @@
 import { NextResponse } from 'next/server';
-import { headers } from 'next/headers';
-import { createClient } from '@supabase/supabase-js';
-import type { Stripe as StripeType } from 'stripe';
+import Stripe from 'stripe';
+import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
+import { cookies } from 'next/headers';
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+  apiVersion: '2025-02-24.acacia',
+});
+
+const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET!;
 
 export async function POST(req: Request) {
+  const body = await req.text();
+  const signature = req.headers.get('stripe-signature') as string;
+
+  let event: Stripe.Event;
+
   try {
-    // Import Stripe dynamically
-    const { default: Stripe } = await import('stripe');
-    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '');
-    const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET || '';
-    
-    const body = await req.text();
-    const headersList = await headers();
-    const signature = headersList.get('stripe-signature');
-
-    if (!signature) {
-      return NextResponse.json(
-        { error: 'Missing stripe-signature header' },
-        { status: 400 }
-      );
-    }
-
-    // Verify the event
-    const event = stripe.webhooks.constructEvent(
-      body,
-      signature,
-      endpointSecret
-    );
-
-    // Create Supabase client
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    );
-
-    // Handle the event
-    switch (event.type) {
-      // Handle one-time payment events
-      case 'checkout.session.completed': {
-        const session = event.data.object as StripeType.Checkout.Session;
-        
-        // Check if this is a subscription or one-time payment
-        if (session.mode === 'subscription') {
-          // Handle subscription checkout
-          const userId = session.metadata?.userId;
-          const planId = session.metadata?.planId;
-          const subscriptionId = session.subscription as string;
-          
-          if (userId && planId && subscriptionId) {
-            // Get subscription details from Stripe
-            const subscription = await stripe.subscriptions.retrieve(subscriptionId);
-            
-            // Insert subscription record
-            const { error } = await supabase
-              .from('user_subscriptions')
-              .insert({
-                user_id: userId,
-                plan_id: planId,
-                stripe_subscription_id: subscriptionId,
-                status: subscription.status,
-                current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
-                current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
-              });
-              
-            if (error) {
-              console.error('Error inserting subscription record:', error);
-            }
-          }
-        } else {
-          // Handle one-time payment
-          const productIds = session.metadata?.productIds;
-          const userId = session.metadata?.userId;
-          
-          // Check if this is a consultation booking
-          const isConsultation = session.metadata?.isConsultation === 'true';
-          const serviceId = session.metadata?.serviceId;
-          const scheduledAt = session.metadata?.scheduledAt;
-          
-          if (isConsultation && userId && serviceId && scheduledAt) {
-            // Insert coaching session record
-            const { error } = await supabase
-              .from('coaching_sessions')
-              .insert({
-                user_id: userId,
-                title: 'Initial Consultation',
-                description: 'One-time consultation session',
-                scheduled_at: scheduledAt,
-                status: 'scheduled',
-              });
-              
-            if (error) {
-              console.error('Error inserting coaching session record:', error);
-            }
-          } else if (productIds && userId) {
-            // Handle regular product purchase
-            const productIdArray = productIds.split(',');
-            
-            // Update all purchases to completed
-            for (const productId of productIdArray) {
-              const { error } = await supabase
-                .from('purchases')
-                .update({ status: 'completed' })
-                .eq('user_id', userId)
-                .eq('product_id', productId)
-                .eq('status', 'pending');
-                
-              if (error) {
-                console.error('Error updating purchase status:', error);
-              }
-            }
-          }
-        }
-        break;
-      }
-      
-      // Handle subscription events
-      case 'customer.subscription.created':
-      case 'customer.subscription.updated': {
-        const subscription = event.data.object as StripeType.Subscription;
-        const subscriptionId = subscription.id;
-        const status = subscription.status;
-        const userId = subscription.metadata?.userId;
-        const planId = subscription.metadata?.planId;
-        
-        if (userId && planId) {
-          // Update subscription status
-          const { error } = await supabase
-            .from('user_subscriptions')
-            .update({
-              status: status,
-              current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
-              current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
-            })
-            .eq('stripe_subscription_id', subscriptionId);
-            
-          if (error) {
-            console.error('Error updating subscription status:', error);
-          }
-        }
-        break;
-      }
-      
-      case 'customer.subscription.deleted': {
-        const subscription = event.data.object as StripeType.Subscription;
-        const subscriptionId = subscription.id;
-        
-        // Update subscription status to canceled
-        const { error } = await supabase
-          .from('user_subscriptions')
-          .update({ status: 'canceled' })
-          .eq('stripe_subscription_id', subscriptionId);
-          
-        if (error) {
-          console.error('Error updating subscription status to canceled:', error);
-        }
-        break;
-      }
-      
-      // Handle checkout session expiration
-      case 'checkout.session.expired': {
-        const session = event.data.object as StripeType.Checkout.Session;
-        const productIds = session.metadata?.productIds;
-        const userId = session.metadata?.userId;
-
-        if (productIds && userId) {
-          // Handle multiple products (comma-separated IDs)
-          const productIdArray = productIds.split(',');
-          
-          // Update all purchases to failed
-          for (const productId of productIdArray) {
-            const { error } = await supabase
-              .from('purchases')
-              .update({ status: 'failed' })
-              .eq('user_id', userId)
-              .eq('product_id', productId)
-              .eq('status', 'pending');
-              
-            if (error) {
-              console.error('Error updating purchase status:', error);
-            }
-          }
-        }
-        break;
-      }
-      
-      default:
-        console.log(`Unhandled event type: ${event.type}`);
-    }
-
-    return NextResponse.json({ received: true });
-  } catch (error) {
-    console.error('Webhook error:', error);
-    return NextResponse.json(
-      { error: 'Webhook handler failed' },
-      { status: 400 }
-    );
+    event = stripe.webhooks.constructEvent(body, signature, endpointSecret);
+  } catch (err: any) {
+    console.error(`Webhook signature verification failed: ${err.message}`);
+    return new NextResponse(`Webhook Error: ${err.message}`, { status: 400 });
   }
+
+  // Create a Supabase client
+  const supabase = createRouteHandlerClient({ cookies });
+
+  // Handle the event
+  if (event.type === 'checkout.session.completed') {
+    const session = event.data.object as Stripe.Checkout.Session;
+    
+    console.log('Processing completed checkout session:', session.id);
+    
+    try {
+      // Get the customer ID from the session
+      const customerId = session.customer as string;
+      const userId = session.client_reference_id;
+      
+      if (!userId) {
+        console.error('No user ID found in session:', session.id);
+        return new NextResponse('No user ID found in session', { status: 400 });
+      }
+      
+      console.log(`Processing purchase for user: ${userId}, session: ${session.id}`);
+      
+      // Get line items from the session
+      const lineItems = await stripe.checkout.sessions.listLineItems(session.id);
+      
+      // Process each line item as a purchase
+      for (const item of lineItems.data) {
+        // Get the product ID from the line item description or metadata
+        const productId = item.price?.product as string;
+        
+        if (!productId) {
+          console.error('No product ID found for line item:', item.id);
+          continue;
+        }
+        
+        // Get the product details from Stripe
+        const stripeProduct = await stripe.products.retrieve(productId);
+        
+        // Get the product ID from metadata (this should be your Supabase product ID)
+        const supabaseProductId = stripeProduct.metadata.product_id;
+        
+        if (!supabaseProductId) {
+          console.error('No Supabase product ID found in Stripe product metadata:', productId);
+          continue;
+        }
+        
+        console.log(`Processing product: ${supabaseProductId} for user: ${userId}`);
+        
+        // Check if there's already a completed purchase for this product and user
+        const { data: existingPurchases, error: existingError } = await supabase
+          .from('purchases')
+          .select('id, status')
+          .eq('user_id', userId)
+          .eq('product_id', supabaseProductId)
+          .eq('status', 'completed');
+          
+        if (existingError) {
+          console.error('Error checking existing purchases:', existingError);
+          continue;
+        }
+        
+        if (existingPurchases && existingPurchases.length > 0) {
+          console.log(`User ${userId} already has a completed purchase for product ${supabaseProductId}`);
+          continue; // Skip this product as it's already purchased
+        }
+        
+        // Check if there's a pending purchase to update
+        const { data: pendingPurchases, error: pendingError } = await supabase
+          .from('purchases')
+          .select('id')
+          .eq('user_id', userId)
+          .eq('product_id', supabaseProductId)
+          .eq('status', 'pending');
+          
+        if (pendingError) {
+          console.error('Error checking pending purchases:', pendingError);
+          continue;
+        }
+        
+        if (pendingPurchases && pendingPurchases.length > 0) {
+          // Update the pending purchase to completed
+          const { error: updateError } = await supabase
+            .from('purchases')
+            .update({
+              status: 'completed',
+              amount: item.amount_total / 100, // Convert from cents to dollars
+              stripe_session_id: session.id,
+              test_mode: process.env.NODE_ENV !== 'production'
+            })
+            .eq('id', pendingPurchases[0].id);
+            
+          if (updateError) {
+            console.error('Error updating purchase:', updateError);
+            continue;
+          }
+          
+          console.log(`Updated purchase ${pendingPurchases[0].id} to completed for user ${userId}, product ${supabaseProductId}`);
+        } else {
+          // Create a new purchase record
+          const { error: insertError } = await supabase
+            .from('purchases')
+            .insert({
+              user_id: userId,
+              product_id: supabaseProductId,
+              status: 'completed',
+              amount: item.amount_total / 100, // Convert from cents to dollars
+              stripe_session_id: session.id,
+              test_mode: process.env.NODE_ENV !== 'production'
+            });
+            
+          if (insertError) {
+            console.error('Error creating purchase:', insertError);
+            continue;
+          }
+          
+          console.log(`Created new completed purchase for user ${userId}, product ${supabaseProductId}`);
+        }
+      }
+      
+      console.log(`Successfully processed all purchases for session: ${session.id}`);
+      
+    } catch (error) {
+      console.error('Error processing checkout session:', error);
+      return new NextResponse('Error processing checkout session', { status: 500 });
+    }
+  }
+
+  return new NextResponse('Webhook received', { status: 200 });
 } 

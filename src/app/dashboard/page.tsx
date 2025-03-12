@@ -7,7 +7,8 @@ import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, BookOpen, ShoppingBasket, Download, Calendar } from 'lucide-react';
-import { supabase } from '@/lib/supabase/client';
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { toast } from 'sonner';
 
 export default function Dashboard() {
   const router = useRouter();
@@ -23,7 +24,12 @@ export default function Dashboard() {
         try {
           setLoading(true);
           
-          // Fetch purchases
+          // Create a Supabase client
+          const supabase = createClientComponentClient();
+          
+          console.log('Fetching purchases for user:', user.id);
+          
+          // Fetch purchases directly with the client component
           const { data: purchasesData, error: purchasesError } = await supabase
             .from('purchases')
             .select(`
@@ -37,14 +43,84 @@ export default function Dashboard() {
                 description,
                 price,
                 image_url,
-                pdfUrl
+                pdf_url
               )
             `)
             .eq('user_id', user.id)
             .eq('status', 'completed')
             .order('created_at', { ascending: false });
             
-          if (purchasesError) throw purchasesError;
+          if (purchasesError) {
+            console.error('Error fetching purchases:', purchasesError);
+            throw purchasesError;
+          }
+          
+          console.log('Fetched purchases for user:', user.id, 'Count:', purchasesData?.length || 0);
+          if (purchasesData && purchasesData.length > 0) {
+            console.log('First purchase:', purchasesData[0]);
+          } else {
+            // If no purchases found, let's check if there are any purchases at all for this user
+            const { data: allPurchases, error: allPurchasesError } = await supabase
+              .from('purchases')
+              .select('id, status, product_id')
+              .eq('user_id', user.id);
+              
+            if (allPurchasesError) {
+              console.error('Error fetching all purchases:', allPurchasesError);
+            } else {
+              console.log('All purchases for user:', user.id, 'Count:', allPurchases?.length || 0);
+              console.log('Purchase statuses:', allPurchases?.map(p => p.status).join(', '));
+              
+              // If there are pending purchases, let's try to update them to completed
+              const pendingPurchases = allPurchases?.filter(p => p.status === 'pending') || [];
+              if (pendingPurchases.length > 0) {
+                console.log('Found pending purchases:', pendingPurchases.length);
+                
+                // Update pending purchases to completed
+                for (const purchase of pendingPurchases) {
+                  const { error: updateError } = await supabase
+                    .from('purchases')
+                    .update({ status: 'completed' })
+                    .eq('id', purchase.id);
+                    
+                  if (updateError) {
+                    console.error('Error updating purchase status:', updateError);
+                  } else {
+                    console.log('Updated purchase status to completed:', purchase.id);
+                    toast.success('Your purchase has been completed!');
+                  }
+                }
+                
+                // Fetch purchases again after updating
+                const { data: updatedPurchases, error: updatedError } = await supabase
+                  .from('purchases')
+                  .select(`
+                    id,
+                    amount,
+                    status,
+                    created_at,
+                    product:products (
+                      id,
+                      title,
+                      description,
+                      price,
+                      image_url,
+                      pdf_url
+                    )
+                  `)
+                  .eq('user_id', user.id)
+                  .eq('status', 'completed')
+                  .order('created_at', { ascending: false });
+                  
+                if (updatedError) {
+                  console.error('Error fetching updated purchases:', updatedError);
+                } else {
+                  console.log('Updated purchases count:', updatedPurchases?.length || 0);
+                  setPurchases(updatedPurchases || []);
+                }
+              }
+            }
+          }
           
           setPurchases(purchasesData || []);
           
@@ -231,7 +307,7 @@ export default function Dashboard() {
               </CardHeader>
               <CardFooter className="p-5 pt-0 flex justify-between">
                 <Button asChild size="sm" variant="outline" className="gap-2 hover:text-accent-foreground">
-                  <a href={purchase.product.pdfUrl} target="_blank" rel="noopener noreferrer">
+                  <a href={purchase.product.pdf_url} target="_blank" rel="noopener noreferrer">
                     <Download className="h-4 w-4" />
                     Download PDF
                   </a>

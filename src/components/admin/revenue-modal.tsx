@@ -19,12 +19,14 @@ import {
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 import { formatDistanceToNow } from 'date-fns';
+import { Badge } from "@/components/ui/badge";
 
 interface Purchase {
   id: string;
   amount: number;
   status: string;
   created_at: string;
+  test_mode?: boolean;
   user?: {
     full_name?: string | null;
     email?: string;
@@ -41,9 +43,10 @@ interface RevenueModalProps {
   isOpen: boolean;
   onClose: () => void;
   purchases: Purchase[];
+  testMode?: boolean;
 }
 
-export function RevenueModal({ isOpen, onClose, purchases }: RevenueModalProps) {
+export function RevenueModal({ isOpen, onClose, purchases, testMode = true }: RevenueModalProps) {
   const [searchQuery, setSearchQuery] = useState('');
   
   // Calculate total revenue
@@ -66,11 +69,22 @@ export function RevenueModal({ isOpen, onClose, purchases }: RevenueModalProps) 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>Revenue Details</DialogTitle>
-          <DialogDescription>
-            Total Revenue: ${totalRevenue.toFixed(2)}
-          </DialogDescription>
+        <DialogHeader className="flex flex-row items-center justify-between">
+          <div>
+            <DialogTitle>Revenue Details</DialogTitle>
+            <DialogDescription>
+              Total {testMode ? 'Test' : 'Live'} Revenue: ${totalRevenue.toFixed(2)}
+            </DialogDescription>
+          </div>
+          {testMode ? (
+            <Badge variant="outline" className="bg-amber-500/10 text-amber-500 hover:bg-amber-500/20">
+              Test Mode
+            </Badge>
+          ) : (
+            <Badge variant="outline" className="bg-green-500/10 text-green-500 hover:bg-green-500/20">
+              Live Mode
+            </Badge>
+          )}
         </DialogHeader>
         
         <div className="relative my-4">
@@ -98,7 +112,7 @@ export function RevenueModal({ isOpen, onClose, purchases }: RevenueModalProps) 
               {filteredPurchases.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={5} className="text-center">
-                    {searchQuery ? 'No purchases match your search' : 'No purchases found'}
+                    {searchQuery ? 'No purchases match your search' : `No ${testMode ? 'test' : 'live'} purchases found`}
                   </TableCell>
                 </TableRow>
               ) : (

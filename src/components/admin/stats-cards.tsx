@@ -12,9 +12,10 @@ interface StatsCardsProps {
   totalPurchases: number;
   users: any[];
   purchases: any[];
+  testMode?: boolean;
 }
 
-export function StatsCards({ totalUsers, totalRevenue, totalPurchases, users, purchases }: StatsCardsProps) {
+export function StatsCards({ totalUsers, totalRevenue, totalPurchases, users, purchases, testMode = true }: StatsCardsProps) {
   const [showUserModal, setShowUserModal] = useState(false);
   const [showRevenueModal, setShowRevenueModal] = useState(false);
   const [showPurchasesModal, setShowPurchasesModal] = useState(false);
@@ -49,10 +50,12 @@ export function StatsCards({ totalUsers, totalRevenue, totalPurchases, users, pu
               <div>
                 <p className="text-sm font-medium">Total Revenue</p>
                 <h3 className="text-3xl font-bold mt-2">${totalRevenue.toFixed(2)}</h3>
-                <p className="text-xs text-muted-foreground mt-1">Lifetime revenue</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {testMode ? 'Test mode revenue' : 'Live mode revenue'}
+                </p>
               </div>
-              <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
-                <DollarSign className="h-6 w-6 text-primary" />
+              <div className={`h-12 w-12 rounded-full ${testMode ? 'bg-amber-500/10' : 'bg-green-500/10'} flex items-center justify-center`}>
+                <DollarSign className={`h-6 w-6 ${testMode ? 'text-amber-500' : 'text-green-500'}`} />
               </div>
             </div>
           </CardContent>
@@ -67,10 +70,12 @@ export function StatsCards({ totalUsers, totalRevenue, totalPurchases, users, pu
               <div>
                 <p className="text-sm font-medium">Total Purchases</p>
                 <h3 className="text-3xl font-bold mt-2">{totalPurchases}</h3>
-                <p className="text-xs text-muted-foreground mt-1">Completed purchases</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {testMode ? 'Test mode purchases' : 'Live mode purchases'}
+                </p>
               </div>
-              <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
-                <ShoppingCart className="h-6 w-6 text-primary" />
+              <div className={`h-12 w-12 rounded-full ${testMode ? 'bg-amber-500/10' : 'bg-green-500/10'} flex items-center justify-center`}>
+                <ShoppingCart className={`h-6 w-6 ${testMode ? 'text-amber-500' : 'text-green-500'}`} />
               </div>
             </div>
           </CardContent>
@@ -88,12 +93,14 @@ export function StatsCards({ totalUsers, totalRevenue, totalPurchases, users, pu
         isOpen={showRevenueModal}
         onClose={() => setShowRevenueModal(false)}
         purchases={purchases}
+        testMode={testMode}
       />
 
       <RevenueModal
         isOpen={showPurchasesModal}
         onClose={() => setShowPurchasesModal(false)}
         purchases={purchases}
+        testMode={testMode}
       />
     </>
   );

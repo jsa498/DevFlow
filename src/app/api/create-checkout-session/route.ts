@@ -42,6 +42,8 @@ export async function POST(req: Request) {
       );
     }
 
+    console.log(`Creating checkout session for user ${user.id} with ${items.length} items`);
+
     // Get all products from database
     const productIds = items.map(item => item.id);
     const { data: products, error: productsError } = await supabase
@@ -56,6 +58,8 @@ export async function POST(req: Request) {
       );
     }
 
+    console.log(`Found ${products.length} products in database`);
+
     // Check for already purchased products
     const { data: existingPurchases, error: purchasesError } = await supabase
       .from('purchases')
@@ -69,6 +73,7 @@ export async function POST(req: Request) {
     }
 
     const alreadyPurchasedIds = (existingPurchases || []).map(p => p.product_id);
+    console.log(`User has already purchased ${alreadyPurchasedIds.length} products`);
     
     // Filter out already purchased products
     const productsToPurchase = products.filter(p => !alreadyPurchasedIds.includes(p.id));
@@ -79,6 +84,8 @@ export async function POST(req: Request) {
         { status: 400 }
       );
     }
+
+    console.log(`Processing ${productsToPurchase.length} products for purchase`);
 
     // Prepare line items for Stripe
     const lineItems = productsToPurchase.map(product => ({
@@ -105,8 +112,12 @@ export async function POST(req: Request) {
         // Store product IDs as comma-separated string in metadata
         productIds: productsToPurchase.map(p => p.id).join(','),
         userId: user.id,
+        test_mode: process.env.STRIPE_SECRET_KEY?.includes('test') ? 'true' : 'false',
       },
     });
+
+    console.log(`Created Stripe checkout session: ${stripeSession.id}`);
+    console.log(`Products in session: ${productsToPurchase.map(p => p.id).join(', ')}`);
 
     // Create pending purchase records for each product
     const purchasePromises = productsToPurchase.map(product => 
@@ -115,10 +126,19 @@ export async function POST(req: Request) {
         product_id: product.id,
         amount: product.price,
         status: 'pending',
-      })
+      }).select()
     );
     
-    await Promise.all(purchasePromises);
+    const purchaseResults = await Promise.all(purchasePromises);
+    
+    // Log any errors creating pending purchases
+    purchaseResults.forEach((result, index) => {
+      if (result.error) {
+        console.error(`Error creating pending purchase for product ${productsToPurchase[index].id}:`, result.error);
+      } else {
+        console.log(`Created pending purchase for product ${productsToPurchase[index].id}`);
+      }
+    });
 
     return NextResponse.json({ sessionId: stripeSession.id });
   } catch (error) {
