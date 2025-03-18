@@ -73,25 +73,59 @@ function CheckoutContent() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          items: items, // Send all items in the cart
+          items: items,
         }),
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to create checkout session');
+        // Handle specific error cases
+        if (response.status === 400 && data.error === 'All products have already been purchased') {
+          toast.error('You have already purchased all these products. Check your dashboard.');
+          clearCart(); // Clear the cart since items are already purchased
+          router.push('/dashboard');
+          return;
+        }
+        
+        if (response.status === 401) {
+          toast.error('Please sign in to complete your purchase');
+          router.push(`/signin?callbackUrl=/checkout`);
+          return;
+        }
+        
+        throw new Error(data.error || 'Failed to create checkout session');
       }
 
-      const { sessionId } = await response.json();
+      const { sessionId } = data;
       
       // Redirect to Stripe Checkout
       const stripe = await loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
-      if (stripe) {
-        await stripe.redirectToCheckout({ sessionId });
+      if (!stripe) {
+        throw new Error('Failed to load payment processor');
+      }
+      
+      const { error } = await stripe.redirectToCheckout({ sessionId });
+      if (error) {
+        throw error;
       }
     } catch (error) {
       console.error('Error during checkout:', error);
-      toast.error(error instanceof Error ? error.message : 'There was a problem processing your payment. Please try again.');
+      
+      // Show a more specific error message if possible
+      let errorMessage = 'There was a problem processing your payment. Please try again.';
+      if (error instanceof Error) {
+        if (error.message.includes('payment processor')) {
+          errorMessage = 'Could not initialize the payment processor. Please try again.';
+        } else if (error.message.includes('network')) {
+          errorMessage = 'Network error. Please check your internet connection and try again.';
+        } else {
+          errorMessage = error.message;
+        }
+      }
+      
+      toast.error(errorMessage);
+    } finally {
       setIsLoading(false);
     }
   };

@@ -8,28 +8,94 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { CheckCircle2 } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
+import { useSupabaseAuth } from '@/components/providers/supabase-auth-provider';
 
 export default function CheckoutSuccessPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { clearCart } = useCartStore();
+  const { user } = useSupabaseAuth();
   const [redirecting, setRedirecting] = useState(false);
-  const [countdown, setCountdown] = useState(5);
+  const [countdown, setCountdown] = useState(10);
+  const [purchaseVerified, setPurchaseVerified] = useState(false);
   
   const sessionId = searchParams.get('session_id');
   
   useEffect(() => {
-    if (sessionId) {
+    if (sessionId && user) {
       console.log('Checkout successful with session ID:', sessionId);
       
       // Clear the cart
       clearCart();
       
-      // Set a timer to redirect to dashboard after 5 seconds
+      // Set a timer to redirect to dashboard after countdown
       // This gives the webhook time to process the purchase
       toast.success('Purchase successful! Redirecting to your dashboard...');
       
       setRedirecting(true);
+      
+      const verifyPurchase = async () => {
+        try {
+          const response = await fetch('/api/verify-purchase', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              sessionId,
+              userId: user.id,
+            }),
+          });
+
+          const data = await response.json();
+
+          if (!response.ok) {
+            throw new Error(data.error || 'Failed to verify purchase');
+          }
+
+          if (data.status === 'completed') {
+            console.log(`Updated ${data.updatedCount} purchases to completed`);
+            setPurchaseVerified(true);
+            toast.success('Purchase verification complete!');
+            
+            if (data.oldPurchases) {
+              toast.error('Some purchases may need manual verification. Please contact support if items are missing from your dashboard.');
+            }
+          } else if (data.status === 'already_completed') {
+            console.log(`All ${data.completedCount} purchases already completed`);
+            setPurchaseVerified(true);
+            toast.success('All purchases have been verified!');
+          } else {
+            console.log('No purchases found, waiting for webhook...');
+            
+            // Check how long we've been waiting
+            const startTime = sessionStorage.getItem('verifyStartTime');
+            const maxWaitTime = 30000; // 30 seconds
+            
+            if (!startTime) {
+              sessionStorage.setItem('verifyStartTime', Date.now().toString());
+              // Wait a bit longer for the webhook to process
+              setTimeout(verifyPurchase, 2000);
+            } else {
+              const waitTime = Date.now() - parseInt(startTime);
+              if (waitTime < maxWaitTime) {
+                // Keep waiting
+                setTimeout(verifyPurchase, 2000);
+              } else {
+                // Give up and show error
+                console.error('Timed out waiting for purchase verification');
+                toast.error('Could not verify purchase. Please check your dashboard or contact support.');
+                setPurchaseVerified(true); // Let the user continue anyway
+              }
+            }
+          }
+        } catch (error) {
+          console.error('Error in verifyPurchase:', error);
+          toast.error('Error verifying purchase. Please check your dashboard.');
+        }
+      };
+      
+      verifyPurchase();
       
       const timer = setInterval(() => {
         setCountdown((prev) => {
@@ -43,11 +109,11 @@ export default function CheckoutSuccessPage() {
       }, 1000);
       
       return () => clearInterval(timer);
-    } else {
+    } else if (!sessionId) {
       // If no session ID, redirect to home
       router.push('/');
     }
-  }, [sessionId, clearCart, router]);
+  }, [sessionId, clearCart, router, user]);
   
   // Extract order ID from session ID (first 8 characters)
   const orderId = sessionId ? sessionId.substring(0, 8).toUpperCase() : '';
@@ -84,7 +150,9 @@ export default function CheckoutSuccessPage() {
           {redirecting && (
             <div className="bg-primary/10 rounded-lg p-4 max-w-md mx-auto">
               <p className="text-primary font-medium">
-                Redirecting to your dashboard in {countdown} seconds...
+                {purchaseVerified 
+                  ? "Purchase verified! Redirecting to your dashboard..." 
+                  : `Finalizing your purchase... Redirecting in ${countdown} seconds...`}
               </p>
             </div>
           )}

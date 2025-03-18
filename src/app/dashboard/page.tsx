@@ -6,9 +6,10 @@ import { useSupabaseAuth } from '@/components/providers/supabase-auth-provider';
 import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, BookOpen, ShoppingBasket, Download, Calendar } from 'lucide-react';
+import { ArrowRight, BookOpen, ShoppingBasket, Download, Calendar, Eye } from 'lucide-react';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { toast } from 'sonner';
+import { Database } from '@/types/supabase';
 
 export default function Dashboard() {
   const router = useRouter();
@@ -18,144 +19,57 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   
   useEffect(() => {
-    // Fetch user's purchases and subscriptions if authenticated
-    if (user) {
-      const fetchUserData = async () => {
-        try {
-          setLoading(true);
-          
-          // Create a Supabase client
-          const supabase = createClientComponentClient();
-          
-          console.log('Fetching purchases for user:', user.id);
-          
-          // Fetch purchases directly with the client component
-          const { data: purchasesData, error: purchasesError } = await supabase
-            .from('purchases')
-            .select(`
-              id,
-              amount,
-              status,
-              created_at,
-              product:products (
-                id,
-                title,
-                description,
-                price,
-                image_url,
-                pdf_url
-              )
-            `)
-            .eq('user_id', user.id)
-            .eq('status', 'completed')
-            .order('created_at', { ascending: false });
-            
-          if (purchasesError) {
-            console.error('Error fetching purchases:', purchasesError);
-            throw purchasesError;
-          }
-          
-          console.log('Fetched purchases for user:', user.id, 'Count:', purchasesData?.length || 0);
-          if (purchasesData && purchasesData.length > 0) {
-            console.log('First purchase:', purchasesData[0]);
-          } else {
-            // If no purchases found, let's check if there are any purchases at all for this user
-            const { data: allPurchases, error: allPurchasesError } = await supabase
-              .from('purchases')
-              .select('id, status, product_id')
-              .eq('user_id', user.id);
-              
-            if (allPurchasesError) {
-              console.error('Error fetching all purchases:', allPurchasesError);
-            } else {
-              console.log('All purchases for user:', user.id, 'Count:', allPurchases?.length || 0);
-              console.log('Purchase statuses:', allPurchases?.map(p => p.status).join(', '));
-              
-              // If there are pending purchases, let's try to update them to completed
-              const pendingPurchases = allPurchases?.filter(p => p.status === 'pending') || [];
-              if (pendingPurchases.length > 0) {
-                console.log('Found pending purchases:', pendingPurchases.length);
-                
-                // Update pending purchases to completed
-                for (const purchase of pendingPurchases) {
-                  const { error: updateError } = await supabase
-                    .from('purchases')
-                    .update({ status: 'completed' })
-                    .eq('id', purchase.id);
-                    
-                  if (updateError) {
-                    console.error('Error updating purchase status:', updateError);
-                  } else {
-                    console.log('Updated purchase status to completed:', purchase.id);
-                    toast.success('Your purchase has been completed!');
-                  }
-                }
-                
-                // Fetch purchases again after updating
-                const { data: updatedPurchases, error: updatedError } = await supabase
-                  .from('purchases')
-                  .select(`
-                    id,
-                    amount,
-                    status,
-                    created_at,
-                    product:products (
-                      id,
-                      title,
-                      description,
-                      price,
-                      image_url,
-                      pdf_url
-                    )
-                  `)
-                  .eq('user_id', user.id)
-                  .eq('status', 'completed')
-                  .order('created_at', { ascending: false });
-                  
-                if (updatedError) {
-                  console.error('Error fetching updated purchases:', updatedError);
-                } else {
-                  console.log('Updated purchases count:', updatedPurchases?.length || 0);
-                  setPurchases(updatedPurchases || []);
-                }
-              }
-            }
-          }
-          
-          setPurchases(purchasesData || []);
-          
-          // Fetch subscriptions
-          const { data: subscriptionsData, error: subscriptionsError } = await supabase
-            .from('user_subscriptions')
-            .select(`
-              *,
-              plan:coaching_subscription_plans (
-                id,
-                title,
-                sessions_per_month,
-                service:coaching_services (
-                  id,
-                  title
-                )
-              )
-            `)
-            .eq('user_id', user.id)
-            .in('status', ['active', 'trialing'])
-            .order('created_at', { ascending: false });
-            
-          if (subscriptionsError) throw subscriptionsError;
-          
-          setSubscriptions(subscriptionsData || []);
-        } catch (error) {
-          console.error('Error fetching user data:', error);
-        } finally {
-          setLoading(false);
-        }
-      };
-      
-      fetchUserData();
+    if (!user) {
+      router.push('/signin?callbackUrl=/dashboard');
+      return;
     }
-  }, [user, isLoading, router]);
+
+    const fetchPurchases = async () => {
+      try {
+        const supabase = createClientComponentClient<Database>();
+
+        // Fetch completed purchases with product and course details
+        const { data: purchasesData, error: purchasesError } = await supabase
+          .from('purchases')
+          .select(`
+            id,
+            amount,
+            status,
+            created_at,
+            product:products (
+              id,
+              title,
+              description,
+              image_url,
+              pdf_url,
+              course:courses (
+                id,
+                difficulty_level,
+                estimated_duration
+              )
+            )
+          `)
+          .eq('user_id', user.id)
+          .eq('status', 'completed')
+          .order('created_at', { ascending: false });
+
+        if (purchasesError) {
+          console.error('Error fetching purchases:', purchasesError);
+          toast.error('Failed to load your purchases');
+          return;
+        }
+
+        setPurchases(purchasesData || []);
+      } catch (error) {
+        console.error('Error in fetchPurchases:', error);
+        toast.error('Failed to load your purchases');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPurchases();
+  }, [user, router]);
   
   // Show loading state
   if (isLoading || loading) {
@@ -247,80 +161,101 @@ export default function Dashboard() {
       )}
       
       {/* Digital Products Section */}
-      <h2 className="text-2xl font-bold mb-6">My Digital Products</h2>
-      {purchases.length === 0 ? (
-        <Card className="border border-border/40 shadow-lg">
-          <CardHeader>
-            <CardTitle>You haven't purchased any products yet.</CardTitle>
-            <CardDescription>
-              Browse our selection of digital marketing products and courses to get started.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <p className="text-muted-foreground">
-              Our products include guides, templates, and tools to help you accelerate your digital marketing efforts.
-            </p>
-          </CardContent>
-          <CardFooter className="flex flex-col sm:flex-row gap-4">
-            <Button asChild className="w-full sm:w-auto hover:text-primary-foreground">
-              <Link href="/products" className="inline-flex items-center gap-2">
-                <ShoppingBasket className="h-4 w-4" />
+      {purchases.length > 0 ? (
+        <div className="mb-12">
+          <h2 className="text-2xl font-bold mb-6">My Digital Products</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {purchases.map((purchase) => {
+              const product = purchase.product;
+              const isCourse = !!product?.course;
+              
+              return (
+                <Card key={purchase.id} className="group overflow-hidden border border-border/40 hover:border-primary/20 transition-all hover:shadow-lg hover:shadow-primary/5">
+                  <div className="relative h-48 overflow-hidden">
+                    {product?.image_url ? (
+                      <img 
+                        src={product.image_url} 
+                        alt={product.title} 
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-muted flex items-center justify-center">
+                        <ShoppingBasket className="h-12 w-12 text-muted-foreground/40" />
+                      </div>
+                    )}
+                  </div>
+                  <CardHeader className="p-5">
+                    <CardTitle className="text-xl group-hover:text-primary transition-colors">
+                      {product?.title || "Product"}
+                    </CardTitle>
+                    <CardDescription className="line-clamp-2">
+                      {product?.description || "No description available"}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="p-5 pt-0">
+                    <div className="flex items-center justify-between mb-4">
+                      <span className="text-sm text-muted-foreground">Type:</span>
+                      <span className="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100">
+                        {isCourse ? "Course" : "Digital Product"}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">Purchased:</span>
+                      <span>{new Date(purchase.created_at).toLocaleDateString()}</span>
+                    </div>
+                  </CardContent>
+                  <CardFooter className="p-5 pt-0 flex justify-between">
+                    {isCourse ? (
+                      <Button asChild size="sm" className="gap-2">
+                        <Link href={`/courses/${product.id}`}>
+                          <BookOpen className="h-4 w-4" />
+                          Start Course
+                        </Link>
+                      </Button>
+                    ) : (
+                      <Button asChild size="sm" className="gap-2">
+                        <a href={product.pdf_url} target="_blank" rel="noopener noreferrer">
+                          <Download className="h-4 w-4" />
+                          Download PDF
+                        </a>
+                      </Button>
+                    )}
+                    
+                    <Button asChild size="sm" variant="outline" className="gap-2 hover:text-accent-foreground">
+                      <Link href={isCourse ? `/courses/${product.id}` : `/products/${product.id}`}>
+                        <Eye className="h-4 w-4" />
+                        View Details
+                      </Link>
+                    </Button>
+                  </CardFooter>
+                </Card>
+              );
+            })}
+          </div>
+        </div>
+      ) : (
+        <div className="bg-card rounded-lg p-8 mb-12">
+          <h2 className="text-2xl font-bold mb-4">You haven't purchased any products yet.</h2>
+          <p className="text-muted-foreground mb-6">
+            Browse our selection of digital marketing products and courses to get started.
+          </p>
+          <p className="text-muted-foreground mb-8">
+            Our products include guides, templates, and tools to help you accelerate your digital marketing efforts.
+          </p>
+          <div className="flex flex-wrap gap-4">
+            <Button asChild>
+              <Link href="/products">
+                <ShoppingBasket className="mr-2 h-4 w-4" />
                 Browse Products
               </Link>
             </Button>
-            <Button asChild variant="outline" className="w-full sm:w-auto hover:text-accent-foreground">
-              <Link href="/courses" className="inline-flex items-center gap-2">
-                <BookOpen className="h-4 w-4" />
+            <Button asChild variant="outline">
+              <Link href="/courses">
+                <BookOpen className="mr-2 h-4 w-4" />
                 Browse Courses
               </Link>
             </Button>
-            {subscriptions.length === 0 && (
-              <Button asChild variant="outline" className="w-full sm:w-auto hover:text-accent-foreground">
-                <Link href="/build" className="inline-flex items-center gap-2">
-                  <Calendar className="h-4 w-4" />
-                  Coaching Services
-                </Link>
-              </Button>
-            )}
-          </CardFooter>
-        </Card>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {purchases.map((purchase) => (
-            <Card key={purchase.id} className="group overflow-hidden border border-border/40 hover:border-primary/20 transition-all hover:shadow-lg hover:shadow-primary/5">
-              {purchase.product.image_url && (
-                <div className="relative h-48 w-full overflow-hidden">
-                  <img 
-                    src={purchase.product.image_url} 
-                    alt={purchase.product.title} 
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
-                </div>
-              )}
-              <CardHeader className="p-5">
-                <CardTitle className="text-xl group-hover:text-primary transition-colors">
-                  {purchase.product.title}
-                </CardTitle>
-                <CardDescription className="line-clamp-2">
-                  {purchase.product.description}
-                </CardDescription>
-              </CardHeader>
-              <CardFooter className="p-5 pt-0 flex justify-between">
-                <Button asChild size="sm" variant="outline" className="gap-2 hover:text-accent-foreground">
-                  <a href={purchase.product.pdf_url} target="_blank" rel="noopener noreferrer">
-                    <Download className="h-4 w-4" />
-                    Download PDF
-                  </a>
-                </Button>
-                
-                <Button asChild size="sm" variant="ghost" className="gap-1 hover:text-accent-foreground">
-                  <Link href={`/products/${purchase.product.id}`}>
-                    View Details <ArrowRight className="h-3 w-3" />
-                  </Link>
-                </Button>
-              </CardFooter>
-            </Card>
-          ))}
+          </div>
         </div>
       )}
       
